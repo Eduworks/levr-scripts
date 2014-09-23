@@ -1,0 +1,143 @@
+//---------------------------------------
+//For group, I am making the group ID the unique key.  Was thinking it should be the name since there should not be multiple groups with the same name.
+
+//---------------------------------------//---------------------------------------
+//---------------Group helper functions
+//==============
+
+group=#idxGet(key="@groupId").buildArguments().toObject();
+allGroups=#idxKeys().buildArguments().cforEach(paramName="groupId",op=group);
+groupMetadata=group.getByParam(param="@metadataType");
+
+//==============
+groupExists=#if(
+	operator=group.ccall(groupId="@groupId"), 
+	operand="",
+	eq="false",
+	ne="true"
+);
+  
+#groupExists=groupExists;
+
+//==============
+
+//---------------------------------------//---------------------------------------
+//--------------Basic Service calls
+//==============
+
+//==============
+//Creates a group with the given ID and given parent group ID (the ID should be a descriptive name)
+//Returns the key of the created group entry
+
+//For groups, I am making the group ID the unique key.  Was thinking it should be the name since there should not be multiple groups with the same name.
+
+groupCreate=#if(
+	operator=groupExists,
+	operand="false",
+	eq=#object(
+		a=#object(
+			name="@groupId",
+			description="@groupId",
+			createdDate=#date(_raw="true")
+		).idxSet(key="@groupId").buildArguments(),
+		b="@groupId"
+	).cget(b=""),
+	ne="false"
+);
+
+#groupCreate=groupCreate;
+
+//==============
+//Returns a list of all groups in the database
+
+groupsGet=allGroups;
+
+#groupsGet=groupsGet;
+
+//==============
+//Returns a group with the given groupId
+
+groupGet=#if(
+	operator=groupExists,
+	operand="true",
+	eq=group,
+	ne="false"
+);
+
+#groupGet=groupGet;
+
+//==============
+//Deletes a group with the given groupId
+//todo Delete other group links
+
+groupDelete=#if(
+	operator=groupExists,
+	operand="true",
+	eq=#object(
+		a=#idxDelete(key="@groupId").buildArguments(),             		           
+		b="true"
+	).cget(b=""),
+	ne="false"
+);
+
+#groupDelete=groupDelete;
+
+//==============
+//Updates a field with the given key with the given value for a given groupId
+
+getValue=#if(
+	operator="@isArray",
+	operand="true",
+	eq=#object(a="@value").cget(a="").toArray(),
+	ne="@value"
+);
+
+updateGroupField=#if(
+	operator=groupExists,
+	operand="true",
+	eq=#object(
+		a=#idxPut(key="@groupId").buildArguments(
+			key="@field",
+			value=getValue,
+			remove="field",
+			remove1="value",
+			remove2="groupId",
+			remove3="isArray"
+		),
+		b="true"
+	).cget(b=""),             	              	    
+	ne="false"
+);
+  
+#groupUpdateField=updateGroupField;
+
+//==============
+//Returns an aggregate member list of type memberType from a group aggregated by the given groupLinkType
+//Group member type MUST represent a list of members of type group (i.e. the value array must be groupIds).
+//Example:
+//Group Hierarchy:  TestGroup2 -> TestGroup2a -> TestGroup2a1
+//TestGroup2a1 inherits the permissions from TestGroup2a which inherits the permissions from TestGroup2
+//To retrieve all permissions that TestGroup2a1 has, we would aggregate field="permissions" by groupLinkType="parentGroups"
+//
+//Will not work as expected if a memberItem contains a semicolon...I know this is bad but I give up on this for now.
+
+relatedGroups=groupMetadata.ccall(metadataType="@groupLinkType").cforEach(paramName="groupId",op=group);
+
+aggByRelatedGroup=#object(
+	a=relatedGroups.cforEach(paramName="relativeGroupId",op=#listAdd(item=#pgroupAggByRelatedGroup(groupId="@relativeGroupId"))),
+	b=group.ccall(groupId="@groupId").getByParam(param="@field")
+);
+
+#pgroupAggByRelatedGroup=aggByRelatedGroup;
+
+aggregateMembersByRelatedGroup=#if(
+	operator=groupExists,
+	operand="true",
+	eq=#object(
+		a=#add(a="[", b=aggByRelatedGroup.flatten(_delimiter=";"), c="]").toArray(),
+		b="true"
+	).cget(a=""),             	              	    
+	ne="false"
+);
+
+#groupAggregateMembersByRelatedGroup=aggregateMembersByRelatedGroup;
