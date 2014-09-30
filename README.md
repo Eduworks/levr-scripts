@@ -8,10 +8,10 @@ This serves as a repository for levr scripts produced and open sourced by the co
 The following types of scripts are allowed:
 
 * Scripts (.rs2, .jsl, or .psl) that can be used in the LEVR-Base package
-** Example scripts
-** Demonstration scripts
-** Production-ready scripts
-** Library or Utility scripts
+  * Example scripts
+  * Demonstration scripts
+  * Production-ready scripts
+  * Library or Utility scripts
 
 levr-scripts are Open Source under the Apache 2.0 license, the details of which can be found in license.txt.
 
