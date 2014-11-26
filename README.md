@@ -13,7 +13,9 @@ The following types of scripts are allowed:
   * Production-ready scripts
   * Library or Utility scripts
 
-levr-scripts are Open Source under the Apache 2.0 license, the details of which can be found in license.txt.
+base scripts are Open Source under the Apache 2.0 license, the details of which can be found in base/license.txt.
+decals scripts are Open Source under the Apache 2.0 license, the details of which can be found in decals/license.txt.
+competency scripts are Open Source under LGPL, the details of which can be found in competency/license.txt.
 
 levr-scripts are under active development.
 
