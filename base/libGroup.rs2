@@ -19,19 +19,9 @@ dataFields={
 group=#idxGet(db,key="@groupId").toObject();
 allGroups=#idxKeys(db).cforEach(paramName="groupId",op=group);
 
-//---------------------------------------//---------------------------------------
-//--------------Basic Service calls
-//==============
-
-//==============
-//Returns a list of all groups in the database
-
 groupsGet=allGroups;
 
 #groupsGet=groupsGet;
-
-//==============
-//Returns a group with the given groupId
 
 groupGet=group;
 
@@ -41,12 +31,6 @@ groupGetSafe=#object(
 
 #groupGet=groupGet;
 
-//==============
-//Creates a group with the given ID and given parent group ID (the ID should be a descriptive name)
-//Returns the key of the created group entry
-
-//For groups, I am making the group ID the unique key.  Was thinking it should be the name since there should not be multiple groups with the same name.
-
 groupCreate=#if(
 	operator=groupGet,
 	operand="",
@@ -55,10 +39,6 @@ groupCreate=#if(
 );
 
 #groupCreate=groupCreate;
-
-//==============
-//Deletes a group with the given groupId
-//todo Delete other group links
 
 groupDelete=#if(
 	operator=groupGet,
