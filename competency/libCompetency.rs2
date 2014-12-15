@@ -10,6 +10,7 @@ modelDB = {
 	index = "0"
 };
 
+
    
 // TODO: Add Logging to each CRUD service
 
@@ -57,7 +58,7 @@ createCompetencyValues = #toObject(obj="@competencyRelationships").putInObject(
 
 createCompParams = {
 	directory = #competencyDirectory(),
-	ontologyId = "@modelId",
+	ontologyId = #competencyGetModelUri(),
 	classId = "Competency",
 	vals = createCompetencyValues
 };
@@ -82,7 +83,7 @@ createCompetency = #object(
 
 readCompParams = {
 	directory = #competencyDirectory(),
-	ontologyId = "@modelId",
+	ontologyId = #competencyGetModelUri(),
 	instanceId = "@competencyId",  
 };
 
@@ -109,7 +110,7 @@ read = #object(
 
 readAllCompParams = {
 	directory = #competencyDirectory(),
-	ontologyId = "@modelId",
+	ontologyId = #competencyGetModelUri(),  
 	classId="Competency",
 	local="true",
 };
@@ -206,7 +207,7 @@ createFromOldAndNew = #competencyRead(modelId="@modelId", competencyId="@compete
 
 updateCompParams = {
 	directory = #competencyDirectory(),
-	ontologyId = "@modelId",
+	ontologyId = #competencyGetModelUri(),  
 	instanceId = "@competencyId",
 	vals = createFromOldAndNew
 };
@@ -259,6 +260,10 @@ updateCompSourceIdParams = {
 updateCompetencySourceId = #ontologyUpdateInstance(updateCompSourceIdParams);
 #competencyUpdateSourceId = updateCompetencySourceId;
 
+updateSource = #competencyUpdateSourceId().displayJson(_collapse="true");
+
+/test/source = updateSource;
+
 //==============
 // DELETE Competency
 //--------------
@@ -272,7 +277,7 @@ updateCompetencySourceId = #ontologyUpdateInstance(updateCompSourceIdParams);
 
 deleteCompParams = {
 	directory = #competencyDirectory(),
-	ontologyId = "@modelId",
+	ontologyId = #competencyGetModelUri(),  
 	instanceId = "@competencyId",
 };
 
@@ -300,7 +305,7 @@ deleteCompetency = #object(
 
 listRelationshipParams = {
 	directory = #competencyDirectory(),
-	ontologyId = #competencyErrorModelExists(modelId=optionalModelId),
+	ontologyId = #competencyGetModelUri(modelId=#competencyErrorModelExists(modelId=optionalModelId)),
 	classId = "Competency",
 	rangeId=":Concept"
 };

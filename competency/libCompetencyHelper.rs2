@@ -140,10 +140,6 @@ createGuestIfSet = #if(operator=#competencyCreateGuestUser(), operand=#true(),
 						ne="No Guest User Created"
 					);
 
-
-// NOTICE: THIS URI REPLACEMENT FUNCTION WILL BREAK UNLESS YOU USE THE DEFAULT STRUCTURE FILES DISTRIBUTED WITH THESE SCRIPTS EACH TIME
-// 			THAT YOU CHANGE THE URI
-// TODO: THE URI CANNOT BE CHANGED AFTER THE INSTANCE IS FIRST STARTED RIGHT NOW, CHANGE THIS TO MAKE IT MORE FLEXIBLE
 replaceUriAndSaveFile = #fileLoad(
 							path="@path"
 						).fileToString(
@@ -184,21 +180,55 @@ fixStructureFiles = #object(
 						b=fixUserStructure
 					);
 
+checkDeleteStructures = #if(operator=#indexOf(str="@uri", substr="structure-"), operand="-1",
+							ne=#ontologyDelete(directory=#competencyDirectory(), ontologyId="@uri"),
+						);
+
+addImport = #ontologyAddImport(ontologyId=#competencyGetModelUri(), importId="structure-competency");
+
 setupTDB = #object(
 				fix_uri=fixStructureFiles,
+				delete_old=#decode(obj="@uris").cforEach(op=checkDeleteStructures, paramName="uri", threaded="false"), 
 				load_1=#ontologyTDBLoader(input=#add(a=#competencyStructureDirectory(), b="/structure-competency.owl"), identifier="structure-competency", tdbDirectory=#competencyDirectory()),
 				load_2=#ontologyTDBLoader(input=#add(a=#competencyStructureDirectory(), b="/structure-user.owl"), identifier="structure-user", tdbDirectory=#competencyDirectory()),
+				model_import = #competencyGetModelIds().cforEach(op=addImport, paramName="modelId", threaded="false")
 			);
 
-checkTDB = #if(operator=#fileExists(path=#add(a=#competencyDirectory(), b="nodes.dat")), operand="true", ne=setupTDB, eq="true");
+checkTDB = #if(operator=#decode(obj="@uris").has(has=#add(a=#competencyDefaultURI(), b="structure-user")), operand="true", 
+					ne=setupTDB, 
+					eq="true"
+				).ccall(uris=#ontologyListOntologies(directory=#competencyDirectory()));
 
-setup = #object(
+deleteUser = #object(
+				a=#ontologyDelete(directory=#competencyDirectory(), ontologyId="@uri"),
+				b=#idxDelete(indexDir = #competencyUserDirectory(), databaseName = #competencyUserDBName(), index = "0", key=#string(str="@uri", op="substr", begin=#add(a=#indexOf(str="@uri", substr="user-"), b="5")))
+			);
+			
+checkDeleteUser = #if(operator=#indexOf(str="@uri", substr="user-"), operand="-1",
+						ne=deleteUser
+					);  
+
+deleteUsers = #decode(obj="@uris").cforEach(op=checkDeleteUser, paramName="uri", threaded="false");
+
+checkUri = #if(operator=#catch(try=#ontologyReadAllProperties(directory=#competencyDirectory(), ontologyId=#competencyUserModel(userId=#decode(obj="@users").getIndex(index="0"))), runtime="false"), operand="false",
+				eq=deleteUsers.ccall(uris=#ontologyListOntologies(directory=#competencyDirectory()))
+			); 
+
+os=#ontologyListOntologies(directory=#competencyDirectory()).displayJson(_collapse="true");
+/test/os = os;
+
+checkUserUris = #if(operator=#decode(obj="@users").count(), operand="1",
+					 ge=checkUri,
+					).ccall(users=#competencyGetUserIds()); 
+  
+setup = #object(  
 	a_uri = #ontologySetUriPrefix(uri=#competencyDefaultURI()),
 	b_directory=#competencyDirectory(),
 	c_structure=checkTDB,
 	d_default=#competencyCreateDefaultModel(),
-	e_guestUser=createGuestIfSet,
+	e=checkUserUris,
+	f_guestUser=createGuestIfSet,
 );      
-  
+    
 #competencySetupAutoExecute = setup;
 

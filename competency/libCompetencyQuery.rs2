@@ -54,7 +54,7 @@ searchString = #add(
 
 searchCompParams = {
 	directory = #competencyDirectory(),
-	ontologyId = "@modelId",
+	ontologyId = #competencyGetModelUri(),  
 	query = searchString,
 	local = "true"
 };
@@ -218,7 +218,7 @@ findRelatedQueryString = #add(
 							 
 findRelatedParams = {
 	directory = #competencyDirectory(),
-	ontologyId = "@modelId",
+	ontologyId = #competencyGetModelUri(),  
 	query = findRelatedQueryString
 };
 
@@ -261,7 +261,7 @@ readLevelsQueryString = #add(
 
 readLevelsParams = {
 	directory=#competencyDirectory(),
-	ontologyId="@modelId",
+	ontologyId=#competencyGetModelUri(),  
 	query=readLevelsQueryString
 };
 

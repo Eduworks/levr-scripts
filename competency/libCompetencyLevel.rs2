@@ -69,7 +69,7 @@ checkCreateLevel = #object(
 
 readLevelParams = {
 	directory=#competencyDirectory(),
-	ontologyId="@modelId",
+	ontologyId=#competencyGetModelUri(),  
 	instanceId="@levelId"
 };
 
@@ -97,7 +97,7 @@ checkReadLevel = #object(
 
 readAllCompParams = {
 	directory = #competencyDirectory(),
-	ontologyId = "@modelId",
+	ontologyId = #competencyGetModelUri(),  
 	classId="CompetencyLevel"
 };
 
@@ -162,7 +162,7 @@ updateLevelValues = #competencyReadLevel(
 
 updateLevelParams = {
 	directory=#competencyDirectory(),
-	ontologyId="@modelId",
+	ontologyId=#competencyGetModelUri(),  
 	instanceId="@levelId",
 	vals=updateLevelValues
 };
@@ -193,7 +193,7 @@ checkUpdateLevel = #object(
 
 deleteLevelParams = {
 	directory=#competencyDirectory(),
-	ontologyId="@modelId",
+	ontologyId=#competencyGetModelUri(),  
 	instanceId="@levelId"
 };
 

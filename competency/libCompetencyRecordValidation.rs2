@@ -477,6 +477,9 @@ getValidationEvidences = #ontologyReadInstance(
 	instanceId="@validationId"
 ).getByParam(param="@validationId");
 
+valEv = getValidationEvidences.displayJson(_collapse="true");
+/test/valEv = valEv;
+
 callDeleteEvidence = #execute(service="competencyDeleteEvidence", userId="@userId", evidenceId="@evidenceId", leaveReferences="true");
 
 deleteEvidencesIfExist = #if(

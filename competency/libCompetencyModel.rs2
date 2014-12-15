@@ -10,6 +10,10 @@ modelDB = {
 
 getModelInfo = #idxGet(modelDB, key="@k").toObject().remove(directory="");
 
+
+getModelUri = #idxGet(modelDB, key="@modelId").toObject().cget(uri="");
+#competencyGetModelUri = getModelUri;
+
 // TODO: Add Logging to each Service
 
 
@@ -20,7 +24,7 @@ getModelInfo = #idxGet(modelDB, key="@k").toObject().remove(directory="");
 //==============
 // GET ALL Competency Model Identifiers
 //--------------
-// #competencyGetModelIds
+// #competencyGetModelIds  
 //==============
 
 ids = #idxKeys(modelDB);
@@ -139,6 +143,12 @@ checkCreate = #object(
 // #competencyCreateDefaultModel
 //==============
 
+checkDeleteOldDefault = #if(operator=#indexOf(str="@uri", substr="model-default"), operand="-1",
+							ne=#ontologyDelete(directory=#competencyDirectory(), ontologyId="@uri"),
+						);
+
+deleteOld = #decode(obj="@uris").cforEach(op=checkDeleteOldDefault, paramName="uri", threaded="false");
+
 getDefault = #idxGet(modelDB, key=#competencyDefaultModel()).toObject();
 
 createDefault = #competencyDefaultModel().toParameter(op=createOntology, paramName="modelId").toObject().putInObject(
@@ -157,13 +167,16 @@ createDefault = #competencyDefaultModel().toParameter(op=createOntology, paramNa
 	item=#competencyDefaultLevels()
 ).putInObject(
 	dest="imports",
-	item=#add(a="[", b="]"),
+	item=#add(a="[", b="]"),  
 ).toParameter(op=createModelInDB, paramName="modelInfo").toObject().get(ontologyId="").toParameter(op=addStructure, paramName="newOntId");
-
-checkDefault = #if(operand=#competencyCheckModelExists(modelId=#competencyDefaultModel()), operator="true", 
+  
+checkDefault = #if(operand=#decode(obj="@uris").has(has=#add(a=#competencyDefaultURI(), b="model-default")), operator="true", 
 						eq=getDefault, 
-						ne=createDefault
-					);
+						ne=#object(
+								a=deleteOld,
+								b=createDefault
+							)
+					).ccall(uris=#ontologyListOntologies(directory=#competencyDirectory()));
 
 #competencyCreateDefaultModel = checkDefault;
 

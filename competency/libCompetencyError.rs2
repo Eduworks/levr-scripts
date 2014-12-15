@@ -546,8 +546,10 @@ errorAgentNameSet = #if(operator=checkAgentNameSet, operand="true",
 // Model
 //------------
 
+//eq=#if(operator=tryGetModel.ccall(modelId=#string(str="@modelId", op="substr", begin=#indexOf(str="@modelId", find="model-")), operand=#add(a="{", b="}"),eq="false",ne="true"),
+
 checkModelExists = #if(operator=tryGetModel, operand=#add(a="{", b="}"), 
-							eq="false", 
+							eq="false",
 							ne="true"
 					);
 #competencyCheckModelExists = checkModelExists;
@@ -559,7 +561,7 @@ checkModelExists = #if(operator=tryGetModel, operand=#add(a="{", b="}"),
 checkLevelExists = #catch(
 						try=#ontologyReadInstance(
 								directory=#competencyDirectory(), 
-								ontologyId="@modelId", 
+								ontologyId= #competencyGetModelUri(),
 								instanceId="@levelId"
 							).string(str="true"),
 						runtime="false"
@@ -571,7 +573,7 @@ checkLevelExists = #catch(
 checkCompetencyExists = #catch(
 							try=#ontologyReadInstance(
 									directory=#competencyDirectory(), 
-									ontologyId="@modelId", 
+									ontologyId= #competencyGetModelUri(),
 									instanceId="@competencyId"
 								).string(str="true"),
 							runtime="false"

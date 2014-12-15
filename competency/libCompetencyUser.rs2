@@ -5,7 +5,7 @@
 userDB = {
 	indexDir = #competencyUserDirectory(),
 	databaseName = #competencyUserDBName(),
-	index = "0"
+	index = "0" 
 };
 
 
@@ -255,13 +255,12 @@ checkDeleteUser = #object(
 
 
 //==============
-// DELETE Competency User & Model
+// Read All User Info
 //--------------
 // #competencyGetAllUserInfo
 //--------------
 // userId:
 //==============
-
 
 getCompetency = #execute(
 					service="competencyRead", 
