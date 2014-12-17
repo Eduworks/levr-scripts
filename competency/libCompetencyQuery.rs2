@@ -34,7 +34,7 @@ searchRegexString = #add(a=".*?(", b=splitQuery, c=").*");
 
 searchString = #add(
 	a="PREFIX comp: <",
-	b=#competencyDefaultURI(),
+	b=#string(op="substr", str=#competencyGetModelUri(), begin="0", end=#indexOf(str=#competencyGetModelUri(), substr="model-")),
 	c="structure-competency#>
 		SELECT ?id
 		WHERE { 
@@ -61,7 +61,7 @@ searchCompParams = {
 
 getId = #decode(obj="@result").getInObject(id="");
 
-readCompetencyForQuery = #ontologyReadInstance(directory=#competencyDirectory(), ontologyId="@modelId", instanceId="@instanceId").valueSet().reduce();
+readCompetencyForQuery = #ontologyReadInstance(directory=#competencyDirectory(), ontologyId=#competencyGetModelUri(), instanceId="@instanceId").valueSet().reduce();
 searchCompetency =  #ontologyQuery(searchCompParams).cforEach(op=getId, paramName="result", array="true").cforEach(op=readCompetencyForQuery, paramName="instanceId");
 
 searchAllModels = #competencyGetModelIds().forEach(

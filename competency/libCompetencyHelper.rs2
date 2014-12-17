@@ -180,15 +180,11 @@ fixStructureFiles = #object(
 						b=fixUserStructure
 					);
 
-checkDeleteStructures = #if(operator=#indexOf(str="@uri", substr="structure-"), operand="-1",
-							ne=#ontologyDelete(directory=#competencyDirectory(), ontologyId="@uri"),
-						);
 
 addImport = #ontologyAddImport(ontologyId=#competencyGetModelUri(), importId="structure-competency");
 
 setupTDB = #object(
 				fix_uri=fixStructureFiles,
-				delete_old=#decode(obj="@uris").cforEach(op=checkDeleteStructures, paramName="uri", threaded="false"), 
 				load_1=#ontologyTDBLoader(input=#add(a=#competencyStructureDirectory(), b="/structure-competency.owl"), identifier="structure-competency", tdbDirectory=#competencyDirectory()),
 				load_2=#ontologyTDBLoader(input=#add(a=#competencyStructureDirectory(), b="/structure-user.owl"), identifier="structure-user", tdbDirectory=#competencyDirectory()),
 				model_import = #competencyGetModelIds().cforEach(op=addImport, paramName="modelId", threaded="false")
