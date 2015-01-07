@@ -13,7 +13,8 @@ db={
 
 dataFields={
 	name="@name",
-	description="@description"
+	description="@description",
+	users="@users"
 };
 
 group=#idxGet(db,key="@groupId").toObject();
@@ -43,58 +44,73 @@ groupCreate=#if(
 groupDelete=#if(
 	operator=groupGet,
 	operand="",
-	ne=#idxDelete(db,key="@groupId"),
+	ne=#object(dataFields).idxDelete(db,key="@groupId"),
 	eq=#error(msg="Group does not exist.")
 );
 
 #groupDelete=groupDelete;
 
+groupUpdate=#if(
+	operator=groupGet,
+	operand="",
+	ne=#object(dataFields).idxSet(db,key="@groupId"),
+	eq=#error(msg="Group does not exist.")
+);
+
+#groupUpdate=groupUpdate;
+
 groupUserHas=groupGet.cget(users="").has(has="@userId");
+
 #groupUserHas=groupUserHas;
 
 groupUserAdd=#if(
-	operator=groupUserHas,
-	operand="true",
-	eq=#error(msg="Group already contains user."),
-	ne=#idxPut(
-		db,
-		users=groupGet.cget(users="").append(append="@userId")
-	)
-);
+                 operator=groupUserHas,
+	             operand="true",
+	             eq=#error(msg="Group already contains user."),
+	             ne=#idxPut(db,
+	                        key="@groupId",
+		                    users=groupGet.cget(users="").append(append="@userId")
+	                        )
+                );
+                
 #groupUserAdd=groupUserAdd;
 
 groupUserRemove=#if(
-	operator=groupUserHas,
-	operand="true",
-	ne=#error(msg="Group does not contain user."),
-	eq=#idxPut(
-		db,
-		users=groupGet.cget(users="").remove(item="@userId")
-	)
-);
+                    operator=groupUserHas,
+	                operand="true", 
+	                ne=#error(msg="Group does not contain user."),
+	                eq=#idxPut(db,
+	                           key="@groupId",
+		                       users=groupGet.cget(users="").removeFromArray(item="@userId")
+	                           )
+                    );
+                    
 #groupUserRemove=groupUserRemove;
 
-groupGroupHas=groupGet.cget(Groups="").has(has="@GroupId");
-#groupGroupHas=groupGroupHas;
+//--------------------------------------------------------------
+//************* Functions for nesting groups *******************
 
-groupGroupAdd=#if(
-	operator=groupGroupHas,
-	operand="true",
-	eq=#error(msg="Group already contains Group."),
-	ne=#idxPut(
-		db,
-		groups=groupGet.cget(groups="").append(append="@GroupId")
-	)
-);
-#groupGroupAdd=groupGroupAdd;
+//groupGroupHas=groupGet.cget(groups="").has(has="@groupId");
+//#groupGroupHas=groupGroupHas;
 
-groupGroupRemove=#if(
-	operator=groupGroupHas,
-	operand="true",
-	ne=#error(msg="Group does not contain Group."),
-	eq=#idxPut(
-		db,
-		groups=groupGet.cget(groups="").remove(item="@GroupId")
-	)
-);
-#groupGroupRemove=groupGroupRemove;
+//groupGroupAdd=#if(
+//	operator=groupGroupHas,
+//	operand="true",
+//	eq=#error(msg="Group already contains Group."),
+//	ne=#idxPut(
+//		db,
+//		groups=groupGet.cget(groups="").append(append="@groupId")
+//	)
+//);
+//#groupGroupAdd=groupGroupAdd;
+
+//groupGroupRemove=#if(
+//	operator=groupGroupHas,
+//	operand="true",
+//	ne=#error(msg="Group does not contain Group."),
+//	eq=#idxPut(
+//		db,
+//		groups=groupGet.cget(groups="").remove(item="@groupId")
+//	)
+//);
+//#groupGroupRemove=groupGroupRemove;
