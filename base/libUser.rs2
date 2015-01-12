@@ -75,7 +75,6 @@ login=#if(
 //==============
 //Delete a user if they exist and the password is correct
 delete=#object(
-	b=#puserVerifyPassword(password="@password"),
 	c=#idxDelete(key="@userId").buildArguments(),
 	f="true"
 ).cget(f="");
