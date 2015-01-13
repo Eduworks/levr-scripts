@@ -178,7 +178,7 @@ fixUserStructure = #catch(try=replaceUriAndSaveFile.call(path=#add(a=#competency
 fixStructureFiles = #object(
 						a=fixCompetencyStructure,
 						b=fixUserStructure
-					);
+					);  
 
 
 addImport = #ontologyAddImport(ontologyId=#competencyGetModelUri(), importId="structure-competency");
@@ -197,8 +197,8 @@ checkTDB = #if(operator=#decode(obj="@uris").has(has=#add(a=#competencyDefaultUR
 
 deleteUser = #object(
 				a=#ontologyDelete(directory=#competencyDirectory(), ontologyId="@uri"),
-				b=#idxDelete(indexDir = #competencyUserDirectory(), databaseName = #competencyUserDBName(), index = "0", key=#string(str="@uri", op="substr", begin=#add(a=#indexOf(str="@uri", substr="user-"), b="5")))
-			);
+				b=#idxDelete(indexDir = #competencyUserDirectory(), databaseName = #competencyUserDBName(), index = "0", key=#string(str="@uri", op="substr", begin=#add(a=#indexOf(str="@uri", substr="user-"), b="5"))).toObject()
+			).cget(b="");
 			
 checkDeleteUser = #if(operator=#indexOf(str="@uri", substr="user-"), operand="-1",
 						ne=deleteUser
@@ -222,7 +222,7 @@ setup = #object(
 	b_directory=#competencyDirectory(),
 	c_structure=checkTDB,
 	d_default=#competencyCreateDefaultModel(),
-	e=checkUserUris,
+	e=#decode(obj=checkUserUris),
 	f_guestUser=createGuestIfSet,
 );      
     

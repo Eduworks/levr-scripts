@@ -124,7 +124,7 @@ createAndAddToDB = createOntWithUUID.putInObject(
 ).toParameter(op=createModelInDB, paramName="modelInfo");
 
 // 	4) Add Structure Import to New Ontology
-addStructure = #object(a=#ontologyAddImport(directory=#competencyDirectory(), ontologyId="@newOntId", importId=structureId), b="@newOntId").get(b="");
+addStructure = #object(a=#ontologyAddImport(directory=#competencyDirectory(), ontologyId="@newOntId", importId=structureId), b="@newOntId").cget(b="");
 
 createWithStructure = createAndAddToDB.toObject().get(ontologyId="").toParameter(op=addStructure, paramName="newOntId");
 
