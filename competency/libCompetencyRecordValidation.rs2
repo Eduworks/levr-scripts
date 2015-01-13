@@ -190,9 +190,9 @@ createValidation = #ontologyCreateInstance(createValidationParams).toParameter(o
 
 findValidationQuery =  #add(
 	a="PREFIX comp: <", 
-	b=#competencyDefaultURI(), 
-	c="structure-competency#>
-	PREFIX record: <", d=#competencyDefaultURI(), e="structure-user#>
+	b=#competencyStructureURI(),
+	c="#>
+	PREFIX record: <", d=#competencyUserStructureURI(), e="#>
 	PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
 	SELECT ?id
 	WHERE { ?recordId record:recordValidation ?id .
@@ -777,12 +777,16 @@ removeReference = #ontologyUpdateInstance(directory=#competencyDirectory(), onto
 removeEvidence = #decode(obj="@validationIdObj").get(id="").toParameter(op=removeReference, paramName="validationId");
 
 findEvidenceValidationsQuery = #add(
-	a="PREFIX comp: <http://www.eduworks.com/structure-competency#>
-	PREFIX record: <http://www.eduworks.com/structure-user#>
+	a="PREFIX comp: <"
+	b=#competencyStructureURI(),
+	c="#>
+	PREFIX record: <",
+	d=#competencyUserStructureURI(),
+	e="#>
 	SELECT ?id
 	WHERE { ?id record:validationEvidence '",
-	b="@evidenceId",
-	c="' . }"
+	f="@evidenceId",
+	g="' . }"
 );
 
 findValidations = #ontologyQuery(directory=#competencyDirectory(), ontologyId=#competencyUserModel(), query=findEvidenceValidationsQuery);

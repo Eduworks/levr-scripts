@@ -94,6 +94,16 @@ userModelName= #add(b="user-", c="@userId");
 #competencyUserModel = userModelName;
 
 //==============
+// Competency Model Structure URIs
+//==============
+
+competencyStructureURI = #string(str="http://www.competency.services/structure-competency");
+userStructureURI = #string(str="http://www.competency.services/structure-user");
+ 
+#competencyStructureURI = competencyStructureURI;
+#competencyUserStructureURI = userStructureURI;
+
+//==============
 // Default Competency Model
 //==============
 
@@ -140,61 +150,6 @@ createGuestIfSet = #if(operator=#competencyCreateGuestUser(), operand=#true(),
 						ne="No Guest User Created"
 					);
 
-replaceUriAndSaveFile = #fileLoad(
-							path="@path"
-						).fileToString(
-						).replace(
-							simple="true", 
-							replace="http://www.competency.services/", 
-							with=#competencyDefaultURI()
-						).fileSave(
-							path="@path"
-						);
-
-fixCompetencyStructure = #catch(try=replaceUriAndSaveFile.call(path=#add(a=#competencyStructureDirectory(), b="/structure-competency.owl")),
-								null=#error(
-										msg=#object(
-												code="config", 
-												msg=#add(
-														a="Competency Model Structure File not found at ",
-														b=#add(a=#competencyStructureDirectory(), b="/structure-competency.owl")
-													)
-											)
-									)
-							);
-					
-fixUserStructure = #catch(try=replaceUriAndSaveFile.call(path=#add(a=#competencyStructureDirectory(), b="/structure-user.owl")),
-						null=#error(
-								msg=#object(
-										code="config", 
-										msg=#add(
-												a="Competency Profile Structure File not found at ",
-												b=#add(a=#competencyStructureDirectory(), b="/structure-user.owl")
-											)
-									)
-							)
-					);
-
-fixStructureFiles = #object(
-						a=fixCompetencyStructure,
-						b=fixUserStructure
-					);  
-
-
-addImport = #ontologyAddImport(ontologyId=#competencyGetModelUri(), importId="structure-competency");
-
-setupTDB = #object(
-				fix_uri=fixStructureFiles,
-				load_1=#ontologyTDBLoader(input=#add(a=#competencyStructureDirectory(), b="/structure-competency.owl"), identifier="structure-competency", tdbDirectory=#competencyDirectory()),
-				load_2=#ontologyTDBLoader(input=#add(a=#competencyStructureDirectory(), b="/structure-user.owl"), identifier="structure-user", tdbDirectory=#competencyDirectory()),
-				model_import = #competencyGetModelIds().cforEach(op=addImport, paramName="modelId", threaded="false")
-			);
-
-checkTDB = #if(operator=#decode(obj="@uris").has(has=#add(a=#competencyDefaultURI(), b="structure-user")), operand="true", 
-					ne=setupTDB, 
-					eq="true"
-				).ccall(uris=#ontologyListOntologies(directory=#competencyDirectory()));
-
 deleteUser = #object(
 				a=#ontologyDelete(directory=#competencyDirectory(), ontologyId="@uri"),
 				b=#idxDelete(indexDir = #competencyUserDirectory(), databaseName = #competencyUserDBName(), index = "0", key=#string(str="@uri", op="substr", begin=#add(a=#indexOf(str="@uri", substr="user-"), b="5"))).toObject()
@@ -210,9 +165,6 @@ checkUri = #if(operator=#catch(try=#ontologyReadAllProperties(directory=#compete
 				eq=deleteUsers.ccall(uris=#ontologyListOntologies(directory=#competencyDirectory()))
 			); 
 
-os=#ontologyListOntologies(directory=#competencyDirectory()).displayJson(_collapse="true");
-/test/os = os;
-
 checkUserUris = #if(operator=#decode(obj="@users").count(), operand="1",
 					 ge=checkUri,
 					).ccall(users=#competencyGetUserIds()); 
@@ -220,10 +172,9 @@ checkUserUris = #if(operator=#decode(obj="@users").count(), operand="1",
 setup = #object(  
 	a_uri = #ontologySetUriPrefix(uri=#competencyDefaultURI()),
 	b_directory=#competencyDirectory(),
-	c_structure=checkTDB,
-	d_default=#competencyCreateDefaultModel(),
-	e=#decode(obj=checkUserUris),
-	f_guestUser=createGuestIfSet,
+	c_default=#competencyCreateDefaultModel(),
+	d=#decode(obj=checkUserUris),
+	e_guestUser=createGuestIfSet,
 );      
     
 #competencySetupAutoExecute = setup;

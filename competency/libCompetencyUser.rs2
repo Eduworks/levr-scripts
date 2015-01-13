@@ -9,7 +9,7 @@ userDB = {
 };
 
 
-structureId = #string(str="structure-user");
+structureId = #competencyUserStructureURI();
 
 getUserInfo = #idxGet(userDB, key="@k").toObject();
 

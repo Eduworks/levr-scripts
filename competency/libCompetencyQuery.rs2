@@ -34,8 +34,8 @@ searchRegexString = #add(a=".*?(", b=splitQuery, c=").*");
 
 searchString = #add(
 	a="PREFIX comp: <",
-	b=#string(op="substr", str=#competencyGetModelUri(), begin="0", end=#indexOf(str=#competencyGetModelUri(), substr="model-")),
-	c="structure-competency#>
+	b=#competencyStructureURI(),
+	c="#>
 		SELECT ?id
 		WHERE { 
 				{?id comp:competencyTitle ?title .
@@ -201,8 +201,8 @@ relationshipOntIri = #ontologyGetFullIri(directory = #competencyDirectory(), ont
 
 findRelatedQueryString = #add(
 	a="PREFIX comp: <",
-	b=#competencyDefaultURI(),
-	c="structure-competency#>
+	b=#competencyStructureURI(),
+	c="#>
 	 PREFIX prop: <",
 	d=relationshipOntIri,
 	e="#> ",
@@ -248,11 +248,11 @@ checkFindRelated = #object(
 
 readLevelsQueryString = #add(
 	a="PREFIX comp: <",
-	b=#competencyDefaultURI(),
-	c="structure-competency#> ",
+	b=#competencyStructureURI(),
+	c="#> ",
 	d="PREFIX record: <",
-	e=#competencyDefaultURI(),
-	f="structure-user#> ",
+	e=#competencyUserStructureURI(),
+	f="#> ",
 	g="SELECT ?compId ?levelId ",
 	h="WHERE { ?compId comp:competencyLevels ?levelId . ",
 	i="FILTER( strends( str(?compId), '", j=simpleId.call(str="@competencyId"), k="') )",
@@ -327,11 +327,11 @@ checkReadValidationsOfRecord = #object(
 
 queryString = #add(
 	a = "PREFIX comp: <",
-	b = #competencyDefaultURI(),
-	c = "structure-competency#> ",
+	b = #competencyStructureURI(),
+	c = "#> ",
 	d = "PREFIX record: <",
-	e = #competencyDefaultURI(),
-	f = "structure-user#> ",
+	e = #competencyUserStructureURI(),
+	f = "#> ",
 	g ="SELECT ?id ",
 	h ="WHERE { ?id record:recordCompetency ?compId . ",
 	i =" ?id record:recordCompetencyModel ?modelId . ",
@@ -373,11 +373,11 @@ findRecord = #object(
 
 findUserCompetenciesQueryString = #add(
 	a="PREFIX comp: <",
-	b=#competencyDefaultURI(),
-	c="structure-competency#> ",
+	b=#competencyStructureURI(),
+	c="#> ",
 	d="PREFIX record: <",
-	e=#competencyDefaultURI(),
-	f="structure-user#> ",
+	e=#competencyUserStructureURI(),
+	f="#> ",
 	g="SELECT ?compId ?recordId ?modelId ",
 	h="WHERE { ?recordId record:recordCompetency ?compId . ",
 	i="?recordId record:recordLevel ?level . ",
@@ -475,11 +475,11 @@ findPathFromUser = #competencyReadAllRecords(userId="@userId").keySet().forEach(
 
 checkUserForRecordQueryString = #add(
 	a="PREFIX comp: <",
-	b=#competencyDefaultURI(),
-	c="structure-competency#> ",
+	b=#competencyStructureURI(),
+	c="#> ",
 	d="PREFIX record: <",
-	e=#competencyDefaultURI(),
-	f="structure-user#> ",
+	e=#competencyUserStructureURI(),
+	f="#> ",
 	g="SELECT ?recordId ?level ?confidence ",
 	h="WHERE { ?recordId record:recordCompetency ?compId . ",
 	i="?recordId record:recordLevel ?level . ",
@@ -544,11 +544,11 @@ checkFindCompetencyUsers = #object(
 
 compareUserQueryString = #add(
 	a="PREFIX comp: <",
-	b=#competencyDefaultURI(),
-	c="structure-competency#> ",
+	b=#competencyStructureURI(),
+	c="#> ",
 	d="PREFIX record: <",
-	e=#competencyDefaultURI(),
-	f="structure-user#> ",
+	e=#competencyUserStructureURI(),
+	f="#> ",
 	g="SELECT ?recordId ?level ?confidence ",
 	h="WHERE { ?recordId record:recordCompetency ?compId . ",
 	i="?recordId record:recordLevel ?level . ",

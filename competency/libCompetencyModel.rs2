@@ -41,7 +41,7 @@ ids = #idxKeys(modelDB);
 // modelPrivacy: 
 //==============
 
-structureId = #string(str="structure-competency");
+structureId = #competencyStructureURI();
 
 createModelParams = {
 	directory = #competencyDirectory(),

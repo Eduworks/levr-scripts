@@ -58,11 +58,11 @@ createRecordParams = {
 
 findExistingQuery = #add(
 	a="PREFIX comp: <",
-	b=#competencyDefaultURI(),
-	c="structure-competency#>
+	b=#competencyStructureURI(),
+	c="#>
 		PREFIX record: <",
-	d=#competencyDefaultURI(),
-	e="structure-user#>
+	d=#competencyUserStructureURI(),
+	e="#>
 		SELECT ?id
 		WHERE { ?id record:recordCompetency ?comp .
 				?id record:recordLevel ?level .
