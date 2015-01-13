@@ -9,8 +9,8 @@
 // 		FROM THE REPOSITORY.
 //============================
 
-defaultURI = #string(str="http://www.yourcompany.com/competencies/"); 
-defaultURI = #error(msg="You need to set the default URI value.");					// FIXME
+defaultURIPrefix = #string(str="http://www.yourcompany.com/competencies/"); 
+defaultURIPrefix = #error(msg="You need to set the default URI value.");					// FIXME
 
 //============================
 // Guest (READ-ONLY) User Settings
@@ -118,7 +118,7 @@ evidenceFileDBName = #string(str="evidence-files");
 #competencyBackupDirectoryName = backupDirectoryName;
 #competencyImportDirectoryName = importDirectoryName;
 
-#competencyDefaultURI = defaultURI;
+#competencyDefaultURI = defaultURIPrefix;
 
 #competencyCreateGuestUser = createGuestUser;
 #competencyGuestUserId = guestUserId;

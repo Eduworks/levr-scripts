@@ -104,7 +104,7 @@ createRecord = #object(
 	g=#competencyErrorCompetencyExists(),
 	h=#competencyErrorLevelExists(),
 	i=#competencyErrorLevelNotForCompetency(),
-	j=#ontologyAddImport(directory = #competencyDirectory(), ontologyId=#competencyUserModel(), importId="@modelId"),
+	j=#ontologyAddImport(directory = #competencyDirectory(), ontologyId=#competencyUserModel(), importId=#competencyGetModelUri()),
 	k=findAndCreate
 ).cget(k="");
 

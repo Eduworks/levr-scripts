@@ -62,7 +62,7 @@ searchCompParams = {
 getId = #decode(obj="@result").getInObject(id="");
 
 readCompetencyForQuery = #ontologyReadInstance(directory=#competencyDirectory(), ontologyId=#competencyGetModelUri(), instanceId="@instanceId").valueSet().reduce();
-searchCompetency =  #ontologyQuery(searchCompParams).cforEach(op=getId, paramName="result", array="true").cforEach(op=readCompetencyForQuery, paramName="instanceId");
+searchCompetency =  #ontologyQuery(searchCompParams).foreach(op=getId, paramName="result", aggregation="appendArray").cforEach(op=readCompetencyForQuery, paramName="instanceId");
 
 searchAllModels = #competencyGetModelIds().forEach(
 												op=#competencyCheckUserOrAgentReadAccess(), 
