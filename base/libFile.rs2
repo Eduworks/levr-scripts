@@ -123,7 +123,12 @@ fileUpdate=#object(
 createFileMetadata=#object(
 	a=#idxPut(key="@id",
 		fileName_t=#filename(obj=filePostdata.ccall(postIndex="@fileIndex")),
-		fileSizeBytes_l=#fileSize(obj=filePostdata.ccall(postIndex="@fileIndex")),
+		fileSizeBytes_l=#if(
+			operator="@fsize",
+			operand="",
+			eq=#fileSize(obj=filePostdata.ccall(postIndex="@fileIndex")),
+			ne="@fsize"
+		),
 		mimeType_t=#if(
 			operator="@mime",
 			operand="",
@@ -137,7 +142,8 @@ createFileMetadata=#object(
 			remove1="id",
 			remove2="username",
 			remove3="mime",
-			remove4="inline"
+			remove4="inline",
+			remove5="fsize",
 		),
 	b="true"
 ).cget(b="");
