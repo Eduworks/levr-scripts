@@ -122,7 +122,12 @@ fileUpdate=#object(
 
 createFileMetadata=#object(
 	a=#idxPut(key="@id",
-		fileName_t=#filename(obj=filePostdata.ccall(postIndex="@fileIndex")),
+		fileName_t=#if(
+			operator="@fname",
+			operand="",
+			eq=#filename(obj=filePostdata.ccall(postIndex="@fileIndex")),
+			ne="@fname"
+		),		
 		fileSizeBytes_l=#if(
 			operator="@fsize",
 			operand="",
@@ -144,9 +149,11 @@ createFileMetadata=#object(
 			remove3="mime",
 			remove4="inline",
 			remove5="fsize",
+			remove6="fname"
 		),
 	b="true"
 ).cget(b="");
+
 #fileCreateMetadata = createFileMetadata;
 
 //==============
