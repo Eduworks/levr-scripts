@@ -227,6 +227,35 @@ setMetadata = #object(
 
 #fileSetMetadata=setMetadata;
 
+
+//==============
+//Updates a field with the given key with the given value for a given file ID
+
+getValue=#if(
+	operator="@isArray",
+	operand="true",
+	eq=#object(a="@value").cget(a="").toArray(),
+	ne="@value"
+);
+             
+updateFileMetadataField=#if(
+	operator=fileExists.ccall(id="@fileId"),
+	operand="true",
+	eq=#object(
+		a=#idxPut(key="@fileId").buildArguments(
+			key="@field",
+			value=getValue,
+			remove="field",
+			remove1="value",
+			remove2="isArray"
+		),
+		b="true"
+	).cget(b=""),             	              	    
+	ne="false"
+);
+  
+ #fileUpdateMetadataField=updateFileMetadataField;
+
 // /file/updateMetadata=updateMetadata;
 
 //==============
