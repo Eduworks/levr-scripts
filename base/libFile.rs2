@@ -247,7 +247,8 @@ updateFileMetadataField=#if(
 			value=getValue,
 			remove="field",
 			remove1="value",
-			remove2="isArray"
+			remove2="isArray",
+			remove3="tempId"
 		),
 		b="true"
 	).cget(b=""),             	              	    
