@@ -37,15 +37,15 @@ simpleId = #if(operator=firstChar, operand=":", eq=removedFirst, ne="@str");
 // TODO: Check if the competency has a new version, if it does send error saying this is an older version of the competency (also add an override parameter to this so we can override the error if we want)
 
 recordValues = #add(
-	a="{':recordCompetency': '",
+	a="{':recordCompetency': ['",
 	b="@competencyId", 
-	c="', ':recordLevel': '",
+	c="'], ':recordLevel': ['",
 	d="@levelId",
-	e="', ':recordUpdated': '",
+	e="'], ':recordUpdated': ['",
 	f=#competencyNow(),
-	g="', ':recordCompetencyModel': '", 
+	g="'], ':recordCompetencyModel': ['", 
 	h="@modelId",
-	i="'}"
+	i="']}"
 );
 					
 

@@ -777,7 +777,7 @@ removeReference = #ontologyUpdateInstance(directory=#competencyDirectory(), onto
 removeEvidence = #decode(obj="@validationIdObj").get(id="").toParameter(op=removeReference, paramName="validationId");
 
 findEvidenceValidationsQuery = #add(
-	a="PREFIX comp: <"
+	a="PREFIX comp: <",
 	b=#competencyStructureURI(),
 	c="#>
 	PREFIX record: <",
