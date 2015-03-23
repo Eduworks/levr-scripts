@@ -234,17 +234,17 @@ addEvidenceToValidation = #ontologyUpdateInstance(
 	ontologyId=#competencyUserModel(), 
 	instanceId="@validationId", 
 	vals=addEvidenceValues
+).execute(
+	service="competencyUpdateRecordValidationConfidence", 
+	userId="@userId",
+	validationId="@validationId", 
+	confidence="@confidence"
 );
 
 getValidationId = #decode(obj="@countObj").get(result="").toArray().getIndex(index="0").get(id="");
 addEvidence = getValidationId.toParameter(
 	op=addEvidenceToValidation, 
 	paramName="validationId"
-).execute(
-	service="competencyUpdateRecordValidationConfidence", 
-	userId="@userId",
-	validationId="@validationId", 
-	confidence="@confidence"
 );
 
 createOrAdd = #if(operator=#get(obj=#decode(obj="@countObj"), count=""), operand="1", ge=addEvidence, lt=createValidation);
