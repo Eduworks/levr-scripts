@@ -1,0 +1,2010 @@
+//============================
+//DB config
+
+tempDb={
+	indexDir=#decalsTempDbDirectory(),
+	databaseName=#decalsTempDbName(),
+	index=#decalsTempDbIndexName() 
+};
+
+ratingDb={
+	indexDir=#decalsRatingDbDirectory(),
+	databaseName=#decalsRatingDbName(),
+	index=#decalsRatingDbIndexName() 
+};
+
+collectionDb={
+	indexDir=#decalsCollectionDbDirectory(),
+	databaseName=#decalsCollectionDbName(),
+	index=#decalsCollectionDbIndexName() 
+};
+
+paraTrackDb={
+	indexDir=#decalsParaTrackDbDirectory(),
+	databaseName=#decalsParaTrackDbName(),
+	index=#decalsParaTrackDbIndexName() 
+};
+
+commentDb={
+	indexDir=#decalsCommentDbDirectory(),
+	databaseName=#decalsCommentDbName(),
+	index=#decalsCommentDbIndexName() 
+};
+
+userDb={
+	indexDir=#decalsUserDbDirectory(),
+	databaseName=#decalsUserDbName(),
+	index=#decalsUserDbIndexName() 
+};
+
+sessionDb={
+	indexDir=#decalsSessionDbDirectory(),
+	databaseName=#decalsSessionDbName(),
+	index=#decalsSessionDbIndexName() 
+};
+
+fileDb={
+	indexDir=#decalsFileDbDirectory(),
+	databaseName=#decalsFileDbName(),
+	index=#decalsFileDbIndexName() 
+};
+
+fileMetadataDb={
+	indexDir=#decalsFileMetadataDbDirectory(),
+	databaseName=#decalsFileMetadataDbName(),
+	index=#decalsFileMetadataDbIndexName() 
+};
+
+//============================
+//SOLR config
+
+darSolr = {
+    url=#decalsDarSolrUrl()
+};
+
+registrySolr = {
+    url=#decalsRegistrySolrUrl()
+};
+
+//============================
+//Helpers
+
+decalsPostData=#getMultipartPostData(field="decalsData").toObject();
+lrPublishPostdata = #getMultipartPostData(field="lrData").toObject();
+postDataText=decalsPostData.cget(text="");
+
+fileMdObj=#fileGetMetadata(fileMetadataDb,id="@fileId").toObject();
+allFileMdObj=#idxKeys(fileMetadataDb).cforEach(paramName="fileId",op=fileMdObj);
+
+fileObj=#idxGet(fileDb,key="@fileId").toObject();
+allFileObj=#idxKeys(fileDb).cforEach(paramName="fileId",op=fileObj);
+
+ratingObj=#idxGet(ratingDb,key="@resourceUrl").toObject();
+allRatingObj=#idxKeys(ratingDb).cforEach(paramName="resourceUrl",op=ratingObj);
+
+paraTrackObj=#idxGet(paraTrackDb,key="@resourceUrl").toObject();
+allParaTrackObj=#idxKeys(paraTrackDb).cforEach(paramName="resourceUrl",op=paraTrackObj);
+
+commentObj=#idxGet(commentDb,key="@resourceUrl").toObject();
+allCommentObj=#idxKeys(commentDb).cforEach(paramName="resourceUrl",op=commentObj);
+
+collectionObj=#idxGet(collectionDb,key="@collectionId").toObject();
+allCollectionObj=#idxKeys(collectionDb).cforEach(paramName="collectionId",op=collectionObj);
+
+tempObj=#idxGet(tempDb,key="@tempId").toObject();
+allTempObj=#idxKeys(tempDb).cforEach(paramName="tempId",op=tempObj);
+
+deleteTempObj=#idxDelete(tempDb,key="@tempId");
+
+inFile=#getFileFromPost().getIndex(index="0");
+
+newKey=#generateUUID();
+
+timeStamp=#add(
+	a=#date(dateFormat="yyyy-MM-dd"),
+	b="T",
+	c=#date(dateFormat="hh:mm:ss")
+);
+
+//============================
+//Basic Search
+
+performBasicSearch=#httpPost(
+        obj="",
+        contentType="text/plain",
+        multipart="false",
+        X-Api-Key=#decalsLrSearchApiKey(),
+        url=#add(a=#decalsBasicLrSearchUrl(),
+                 b="?q=",
+        		 d=decalsPostData.cget(searchTerm=""),
+        		 d="&limit=",
+        		 e=decalsPostData.cget(itemsPerPage=""),
+        		 f="&page=",
+        		 g=decalsPostData.cget(page="")
+       	)
+).displayJson();
+
+/decalsBasicSearch=performBasicSearch;
+
+//============================
+//SOLR Search for learning registry entries
+
+solrRegistryQuery=#solrQuery(
+	registrySolr,
+    sq=decalsPostData.cget(query=""),
+    rows=decalsPostData.cget(rows=""),
+    returnFields=#toArray(obj=decalsPostData.cget(returnFields="")),
+    idSort=decalsPostData.cget(idSort=""),
+    useCursor=decalsPostData.cget(useCursor=""),  
+    useMustMatchAll=decalsPostData.cget(useMustMatchAll=""),
+    start=decalsPostData.cget(start="")
+).displayJson();
+
+/decalsSolrRegistryQuery=solrRegistryQuery;
+
+//============================
+//SOLR query counts for learning registry entries
+
+solrRegistryQueryTermsSearch=#solrQuery(
+	registrySolr,
+    sq="@searchTerm",
+    rows="0",
+    idSort="false",
+    useCursor="false",
+    useMustMatchAll="@useMustMatchAll"
+).cget(total="");
+
+searchTerms=#toArray(obj=decalsPostData.cget(terms=""));
+
+solrRegistryQueryTerms=searchTerms.cforEach(threaded="true",paramName="val",op=solrRegistryQueryTermsSearch.ccall(searchTerm="@val",useMustMatchAll=decalsPostData.cget(useMustMatchAll="")));
+
+solrRegistryQueryCounts=#object(
+	a=solrRegistryQueryTerms
+).cget(a="").displayJson();
+
+/decalsSolrRegistryQueryCounts=solrRegistryQueryCounts;
+
+//============================
+//Nouns
+
+getTextNouns=#httpPost(
+        obj=postDataText,
+        contentType="text/plain",
+        multipart="false",
+        X-Mashape-Key=#decalsMashapeKey(),
+        url=#decalsTextNounsServiceUrl()
+);
+
+getTextNounsDisplay=getTextNouns.displayJson();
+
+/decalsGetTextNouns=getTextNounsDisplay;
+
+//============================
+//Text Highlights
+
+getTextKeywords=#httpPost(
+        obj=postDataText,
+        contentType="text/plain",
+        multipart="false",
+        X-Mashape-Key=#decalsMashapeKey(),
+        url=#decalsTextKeywordsServiceUrl()
+);
+
+getTextKeywordsDisplay=getTextKeywords.displayJson();
+
+/decalsGetTextKeywords=getTextKeywordsDisplay;
+
+getTextHighlights=#object(
+    text=postDataText,
+	nouns=getTextNouns.valueSet().cgetIndex(index="0"),
+	keywords=getTextKeywords.valueSet().cgetIndex(index="0")
+).displayJson();
+
+/decalsGetTextHighlights=getTextHighlights;
+
+//============================
+//Word Definition
+
+getWordDefinition=#httpPost(
+        obj=decalsPostData.cget(word=""),
+        contentType="text/plain",
+        multipart="false",
+        X-Mashape-Key=#decalsMashapeKey(),
+        url=#decalsWordDefineServiceUrl()
+);
+
+
+getWordDefinitionDisplay=getWordDefinition.valueSet().cgetIndex(index="0").displayJson();
+
+/decalsDefineWord=getWordDefinitionDisplay;
+
+
+//============================
+//Wiki Info
+getWikiInfo=#httpPost(
+        obj=decalsPostData.cget(title=""),
+        contentType="text/plain",
+        multipart="false",
+        X-Mashape-Key=#decalsMashapeKey(),
+        url=#decalsWikiInfoServiceUrl()
+);
+
+getWikiInfoDisplay=getWikiInfo.valueSet().cgetIndex(index="0").displayJson();
+
+/decalsWikiInfo=getWikiInfoDisplay;
+
+tomTest = #object(
+	a=#decalsLrSearchApiKey(),
+	b=#decalsMashapeKey(),
+	c=#decalsTextKeywordsServiceUrl(),
+	d=#decalsWordDefineServiceUrl(),
+	e=#decalsWikiInfoServiceUrl(),
+	f=#decalsTextNounsServiceUrl(),
+	g=#decalsGenerateMetadataServiceUrl(),
+	h=#decalsBasicLrSearchUrl()	
+).displayJson();
+
+/tomTest = tomTest;
+
+//============================
+//Session
+//============================
+
+sessionObj=#idxGet(sessionDb,key="@sessionId").toObject();
+allSessionObj=#idxKeys(sessionDb).cforEach(paramName="sessionId",op=sessionObj);
+
+invalidSessionError=#error(code="401",msg=#object(error="Invalid session"));
+sessionExpiredError=#error(code="401",msg=#object(error="Session expired"));
+
+//--------------------------
+//Check session
+
+//change this to 'checkSession' for real session checking
+checkSession = #if(	
+	operator=#sessionValidate(sessionDb, sessionId="@sessionId"), 
+	operand="false", 
+	eq=invalidSessionError,
+	ne=#if(
+		operator=#sessionRead(sessionDb, sessionId="@sessionId").get(expires=""), 
+		operand=#date(_raw="true"),
+		lt=#object(
+			a=#sessionDelete(sessionDb, sessionId="@sessionId"),
+		    b=sessionExpiredError
+		),
+	    ge=#sessionUpdate(sessionDb, sessionId="@sessionId", expires=#date(addHours="1", _raw="true")).string(str="true")
+	)
+);
+
+//this 'checkSession' is used for testing
+//checkSession = #string(str="true");
+
+checkSessionDj = checkSessionForReal.displayJson();
+/decalsTestCheckSession = checkSessionDj;
+
+//--------------------------
+//Show all sessions
+//***DEBUG: COMMENT OUT OF PROD***
+
+getAllSessions=allSessionObj.displayJson();
+/decalsShowAllSessions=getAllSessions;
+
+//--------------------------
+//Get session metadata
+
+retrieveSessionMetadata = #sessionRead(sessionDb,sessionId="@sessionId");
+
+retrieveSessionMetadataDj = retrieveSessionMetadata.displayJson();
+/showSessionMetadata=retrieveSessionMetadataDj;
+
+sessionUserId=retrieveSessionMetadata.cget(userId="");
+
+//============================
+//Application settings
+//============================
+
+//--------------------------
+//Get application settings
+
+appSettings=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+    b=#object(
+    	fileDownloadUrl=#decalsFileDownloadUrlPrefix(),
+    	lrPublishNode=#decalsLrPublishNode(),
+    	lrPublishSubmitter=#decalsLrPublishSubmitter(),
+    	lrPublishCurator=#decalsLrPublishCurator(),
+    	lrPublishFromNode=#decalsLrPublishFromNode(),
+    	lrPublishParadataActor=#decalsLrPublishParadataActor()
+    )   
+).cget(b="").displayJson();
+                  
+/decalsAppSettings = appSettings;
+
+//============================
+//Grade Level
+//============================
+
+//--------------------------
+//Normalize grade level into something DECALS recognizes
+
+gradeLevel=fileMdObj.cget(gradeLevel_t="");
+
+normalizeGradeLevel=#if(
+	operator=gradeLevel,
+	operand="",
+	eq="",
+	ne=#if(
+		operator=gradeLevel,
+		operand="5",
+		lt="ES",
+		gt=#if(
+			operator=gradeLevel,
+			operand="9",
+			lt="MS",
+			gt=#if(
+				operator=gradeLevel,
+				operand="13",
+				lt="HS",
+				gt="HE"
+			)
+		)
+	)
+).ccall(fileId="@fileId");
+
+normalizeGradeLevelDj=normalizeGradeLevel.displayJson();
+
+/decalsNormalizeGradeLevel=normalizeGradeLevelDj;
+
+//============================
+//Collections
+//============================
+
+invalidAccessError=#error(code="401",msg=#object(error="Invalid access for task"));
+
+newCollectionUserObj=#object(
+	userId="@userId",
+	firstName=#userGet(userDb,userId="@userId").cget(firstName=""),
+	lastName=#userGet(userDb,userId="@userId").cget(lastName=""),
+	access="@access"	
+);
+
+newCollectionItemObj=#object(	
+	itemIndex="@itemIndex",
+	resourceTitle="@resourceTitle",
+	resourceUrl="@resourceUrl",
+	resourceDescription="@resourceDescription"
+);
+
+itemsForCollection=collectionObj.cget(items="");
+
+itemsForCollectionMinusItem=itemsForCollection.cforEach(
+	paramName="ciIt",
+    op=#if(
+    	operator=#toObject(obj="@ciIt").cget(resourceUrl=""),
+    	operand="@resourceUrl",
+    	ne=#toObject(obj="@ciIt")
+    )   
+).valueSet();
+
+collectionHasItem = itemsForCollection.cforEach(
+	paramName="ciIt",
+    op=#toObject(obj="@ciIt").cget(resourceUrl="")
+).valueSet().has(has="@resourceUrl");
+
+usersForCollection=collectionObj.cget(users="");
+
+usersForCollectionMinusUser=usersForCollection.cforEach(
+	paramName="cuIt",
+    op=#if(
+    	operator=#toObject(obj="@cuIt").cget(userId=""),
+    	operand="@userId",
+    	ne=#toObject(obj="@cuIt")
+    )   
+).valueSet();
+
+collectionHasUser = usersForCollection.cforEach(
+	paramName="cuIt",
+    op=#toObject(obj="@cuIt").cget(userId="")
+).valueSet().has(has="@userId");
+
+userAccessForCollection = usersForCollection.cforEach(
+	paramName="cuIt",
+    op=#if(
+    	operator=#toObject(obj="@cuIt").cget(userId=""),
+    	operand="@userId",
+    	eq=#toObject(obj="@cuIt").cget(access="")
+    )
+).valueSet().getIndex(index="0");
+
+userCanModifyCollection = #if(
+	operator=collectionHasUser,
+	operand="false",
+	eq="false",
+	ne=#if(
+		operator=userAccessForCollection,
+		operand=#decalsModifyAccess(),
+		eq="true",
+		ne="false"
+	)
+);
+
+checkHasCollectionModifyAccess = #if(	
+	operator=userCanModifyCollection, 
+	operand="false", 
+	eq=invalidAccessError
+);
+
+//--------------------------
+//Show all collections
+//***DEBUG: COMMENT OUT OF PROD***
+
+getAllCollections=allCollectionObj.displayJson();
+/decalsShowAllCollections=getAllCollections;
+
+//--------------------------
+//Collections for user
+
+userCollections=allCollectionObj.cforEach(
+	paramName="collectionId",
+    op=#if(
+    	operator=collectionHasUser,
+		operand="true",
+		eq=collectionObj
+	)
+);
+
+getCollectionsForUser=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=userCollections.ccall(userId=decalsPostData.cget(userId=""))
+).cget(b="").displayJson();
+
+/decalsGetCollectionsForUser=getCollectionsForUser;
+
+//--------------------------
+//Get collection
+
+getCollection=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=collectionObj.ccall(collectionId=decalsPostData.cget(collectionId=""))
+).cget(b="").displayJson();
+
+/decalsGetCollection=getCollection;
+
+//--------------------------
+//Add collection
+
+newCollectionObj=#object(
+	collectionId="@collectionId",
+	name="@collectionName",
+	description="@collectionDescription",
+	creator="@userId",
+	createdDate=#date(_raw="true"),
+	updatedDate=#date(_raw="true"),
+	users=#listAdd(a=newCollectionUserObj.ccall(access=#decalsModifyAccess()))	
+);
+
+createCollection=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=newCollectionObj.ccall(
+		collectionName=decalsPostData.cget(collectionName=""),
+		collectionDescription=decalsPostData.cget(collectionDescription=""),
+		userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId=""))
+	).idxSet(collectionDb,key="@collectionId"),
+	c=collectionObj
+).ccall(collectionId=newKey).cget(c="").displayJson();
+
+/decalsCreateCollection = createCollection;
+
+//--------------------------
+//Delete collection
+
+deleteCollection=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkHasCollectionModifyAccess.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId=""))),
+	c=#idxDelete(collectionDb,key="@collectionId"),
+	d=#object(msg="true")
+).ccall(collectionId=decalsPostData.cget(collectionId="")).cget(d="").displayJson();
+
+/decalsDeleteCollection = deleteCollection;
+
+//--------------------------
+//Add collection user
+
+addCollectionUser=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkHasCollectionModifyAccess.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId=""))),
+	c=collectionObj.putInObject(
+		dest="users",
+		item=#listAdd(
+			a=usersForCollectionMinusUser.ccall(userId=decalsPostData.cget(userId="")),
+			b=newCollectionUserObj.ccall(userId=decalsPostData.cget(userId=""),access=decalsPostData.cget(access=""))
+		)
+	).putInObject(
+		dest="updatedDate",
+		item=#date(_raw="true")
+	).idxSet(collectionDb,key="@collectionId"),
+	d=collectionObj
+).ccall(collectionId=decalsPostData.cget(collectionId="")).cget(d="").displayJson();
+
+/decalsAddCollectionUser = addCollectionUser;
+
+//--------------------------
+//Remove collection user
+
+removeCollectionUser=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkHasCollectionModifyAccess.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId=""))),
+	c=collectionObj.putInObject(
+		dest="users",
+		item=#listAdd(
+			a=usersForCollectionMinusUser.ccall(userId=decalsPostData.cget(userId=""))
+		)
+	).putInObject(
+		dest="updatedDate",
+		item=#date(_raw="true")
+	).idxSet(collectionDb,key="@collectionId"),
+	d=collectionObj
+).ccall(collectionId=decalsPostData.cget(collectionId="")).cget(d="").displayJson();
+
+/decalsRemoveCollectionUser = removeCollectionUser;
+
+//--------------------------
+//Add collection item
+
+addCollectionItem=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkHasCollectionModifyAccess.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId=""))),
+	c=collectionObj.putInObject(
+		dest="items",
+		item=#listAdd(
+			a=itemsForCollectionMinusItem.ccall(resourceUrl=decalsPostData.cget(resourceUrl="")),
+			b=newCollectionItemObj.ccall(
+				resourceUrl=decalsPostData.cget(resourceUrl=""),
+				resourceTitle=decalsPostData.cget(resourceTitle=""),
+				resourceDescription=decalsPostData.cget(resourceDescription=""),
+				itemIndex=#if(
+					operator=decalsPostData.cget(itemIndex=""),
+					operand="",
+					ne=decalsPostData.cget(itemIndex=""),
+					eq="999999"
+				)
+			)
+		)
+	).putInObject(
+		dest="updatedDate",
+		item=#date(_raw="true")
+	).idxSet(collectionDb,key="@collectionId"),
+	d=collectionObj
+).ccall(collectionId=decalsPostData.cget(collectionId="")).cget(d="").displayJson();
+
+/decalsAddCollectionItem = addCollectionItem;
+
+//--------------------------
+//Remove collection item
+
+removeCollectionItem=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkHasCollectionModifyAccess.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId=""))),
+	c=collectionObj.putInObject(
+		dest="items",
+		item=#listAdd(
+			a=itemsForCollectionMinusItem.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""))
+		)
+	).putInObject(
+		dest="updatedDate",
+		item=#date(_raw="true")
+	).idxSet(collectionDb,key="@collectionId"),
+	d=collectionObj
+).ccall(collectionId=decalsPostData.cget(collectionId="")).cget(d="").displayJson();
+
+/decalsRemoveCollectionItem = removeCollectionItem;
+
+//--------------------------
+//Remove user from all collections
+
+removeUserFromAllCollections=allCollectionObj.cforEach(
+	paramName="collectionId",
+    op=#if(
+    	operator=collectionHasUser,
+		operand="true",
+		eq=collectionObj.putInObject(
+			dest="users",
+			item=#listAdd(
+				a=usersForCollectionMinusUser
+			)
+		).idxSet(collectionDb,key="@collectionId")
+	)
+);
+
+//--------------------------
+//Remove item from all collections
+
+removeItemFromAllCollections=allCollectionObj.cforEach(
+	paramName="collectionId",
+    op=#if(
+    	operator=collectionHasItem,
+		operand="true",
+		eq=collectionObj.putInObject(
+			dest="items",
+			item=#listAdd(
+				a=itemsForCollectionMinusItem
+			)
+		).idxSet(collectionDb,key="@collectionId")
+	)
+);
+
+//--------------------------
+//Update collection
+
+updateCollectionDb=collectionObj.putInObject(
+	dest="description",
+	item=decalsPostData.cget(collectionData="").cget(description="")
+).putInObject(
+	dest="name",
+	item=decalsPostData.cget(collectionData="").cget(name="")
+).putInObject(
+	dest="users",
+	item=decalsPostData.cget(collectionData="").cget(users="")
+).putInObject(
+	dest="items",
+	item=decalsPostData.cget(collectionData="").cget(items="")
+).putInObject(
+	dest="updatedDate",
+	item=#date(_raw="true")
+).idxSet(collectionDb,key="@collectionId");
+
+//
+
+updateCollection=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkHasCollectionModifyAccess.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId=""))),
+	c=updateCollectionDb,	
+	z=collectionObj
+).ccall(collectionId=decalsPostData.cget(collectionId="")).cget(z="").displayJson();
+
+/decalsUpdateCollection = updateCollection;
+
+//============================
+//Files/Resources
+//============================
+
+//--------------------------
+//Show all files
+//***DEBUG: COMMENT OUT OF PROD***
+
+getAllFiles=allFileObj.displayJson();
+/decalsShowAllFiles=getAllFiles;
+
+//--------------------------
+//Show all file metadata
+//***DEBUG: COMMENT OUT OF PROD***
+
+getAllFileMetadata=allFileMdObj.displayJson();
+/decalsShowAllFileMetadata=getAllFileMetadata;
+
+//--------------------------
+//Resource metadata count for user
+
+fileMdForUser=allFileMdObj.cforEach(
+	paramName="fileId",
+    op=#if(
+    	operator=fileMdObj.cget(uploadedBy_t=""),
+		operand="@userId",
+		eq=fileMdObj
+	)
+);
+
+resourceMetadataCountForUser=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=fileMdForUser.ccall(userId=decalsPostData.cget(userId="")).count()
+).cget(b="").displayJson();
+
+/decalsResourceMetadataCountForUser=resourceMetadataCountForUser;
+
+//--------------------------
+//Show file info
+
+fileInfo=#object(
+		fileName=inFile.filename(),
+		fileSizeBytes=inFile.fileSize(),
+		b64Contents=#fileToBase64(obj=inFile).getByParam(param=inFile.filename()),
+		mimeType=#mimeType(file=inFile)
+);
+
+fileInfoDj=fileInfo.displayJson();
+
+/decalsFileInfo=fileInfoDj;
+
+//--------------------------
+//Upload URL
+
+urlUpload=#object(
+    a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=#fileCreateMetadata(
+		fileMetadataDb,
+		username=retrieveSessionMetadata.ccall(sessionId=decalsPostData.cget(sessionId="")).cget(userId=""),		
+        id="@fileId",
+        type_t="url",
+        mime="application/x-url",
+        fsize="0",
+        fname=decalsPostData.cget(pageTitle=""),
+        title_t=decalsPostData.cget(pageTitle=""),
+        url_t=decalsPostData.cget(url=""),
+        fileIndex="0").buildArguments(remove="sessionId", hard="true"),
+    c=#solrAddDocs(
+    	darSolr,
+        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")),   
+	z="@fileId"
+).ccall(
+	fileId=#generateUUID()
+).cget(z="").displayJson();
+    
+/decalsUrlUpload=urlUpload;
+
+//--------------------------
+//Upload file
+
+fileUpload=#object(
+    a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=#fileCreateMetadata(
+		fileMetadataDb,
+		username=retrieveSessionMetadata.ccall(sessionId=decalsPostData.cget(sessionId="")).cget(userId=""),		
+        id="@fileId",
+        type_t="file",
+        title_t=inFile.filename(),
+        url_t=#add(a=#decalsFileDownloadUrlPrefix(),b="@fileId"),
+        fileIndex="0").buildArguments(remove="sessionId", hard="true"),
+    c=#solrAddDocs(
+    	darSolr,
+        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")),   
+	z="@fileId"
+).ccall(
+	fileId=#fileUpload(fileDb).ccall(fileIndex="0")
+).cget(z="").displayJson();
+    
+/decalsFileUpload=fileUpload;
+
+//--------------------------
+//Update file metadata
+
+resourceUpdateMetadata=#object(
+    a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+    b=#fileUpdateMetadata(fileMetadataDb,field="fileMetadata"),
+    c=#solrAddDocs(
+    	darSolr,
+        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")
+        ),   
+	z=#object(msg="true")
+).ccall(
+	fileId=decalsPostData.cget(fileId="")
+).cget(z="").displayJson();
+    
+/decalsResourceUpdateMetadata=resourceUpdateMetadata;
+
+//--------------------------
+//Download file
+
+downloadFile=#fileGet(fileDb,id="@fileId");
+                  
+/decalsFileDownload = downloadFile;
+
+//--------------------------
+//Get file list for the given user
+
+sortObj=#object(field="@sortField",order="@sortOrder");
+
+getFilesByUser=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=#solrQuery(
+		darSolr,
+    	sq=#add(a="uploadedBy_t:",b=decalsPostData.cget(userId="")),
+    	rows=decalsPostData.cget(rows=""),
+    	idSort=decalsPostData.cget(idSort=""),
+    	useCursor=decalsPostData.cget(useCursor=""),  
+    	useMustMatchAll=decalsPostData.cget(useMustMatchAll=""),
+    	start=decalsPostData.cget(start=""),
+    	sort=sortObj.ccall(
+    		sortField=decalsPostData.cget(sortField=""),
+    		sortOrder=decalsPostData.cget(sortOrder="")
+    	)
+    )
+).cget(b="").displayJson();
+
+/decalsGetFilesByUser=getFilesByUser;
+
+//--------------------------
+//Generate file metadata
+
+getMetaglanceFileMetadata = #httpPost(
+        obj=#fileGet(fileDb,id="@fileId"),
+        contentType="text/plain",
+        multipart="true",
+        name=fileMdObj.cget(fileName_t=""),       
+        url=#decalsGenerateMetadataServiceUrl()
+);
+
+getMetaglanceUrlMetadata=#httpGet(
+        obj=#add(
+        	a=#decalsGenerateMetadataServiceUrl(),
+        	b="?url=",
+        	c="@url"
+        )
+);
+
+resourceMetadata=#if(
+	operator=fileMdObj.cget(type_t=""),
+	operand="file",
+	eq=getMetaglanceFileMetadata.ccall(fileId="@fileId"),
+	ne=getMetaglanceUrlMetadata.ccall(fileId="@fileId",url=fileMdObj.cget(url_t=""))
+);
+
+metadataGenerationFailedMessage=#string(str="Metadata could not be generated for this resource.");
+
+resourceMetadataWithCheck=#if(
+	operator=resourceMetadata.has(has="description_t"),
+	operand="true",
+	eq=resourceMetadata,
+	ne=#object(description_t=metadataGenerationFailedMessage)
+);
+
+updateFileMetadataDescription=#fileUpdateMetadataField(
+	fileMetadataDb,
+	fileId="@fileId",
+	description_t=#add(
+		a=fileMdObj.cget(description_t=""),
+		b=" ***AutoGenerated (",
+		c=#date(dateFormat="EEE, dd MMM yyyy HH:mm:ss z"),
+		d="): ",
+    	e=tempObj.cget(description_t=""),
+    	f=" ***"
+	),
+	updatedDate_l=#date(_raw="true")	
+);
+
+updateOtherFileMetadataFields=#object(
+	a=#fileUpdateMetadataField(
+		fileMetadataDb,
+		fileId="@fileId",
+		classification_t=tempObj.cget(classification_t=""), 
+		duration_f=tempObj.cget(duration_f=""),
+		environment_t=tempObj.cget(environment_t=""),
+		sec_level_t=tempObj.cget(level_t=""),
+		gradeLevel_t=tempObj.cget(gradeLevel_t=""),
+		language_t=tempObj.cget(language_t="")
+	),
+	b=#fileUpdateMetadataField(
+		fileMetadataDb,
+		fileId="@fileId",
+		isArray="true",
+		field="keywords_txt",
+		value=#listAdd(
+			a=fileMdObj.cget(keywords_txt=""),
+			b=#toArray(obj=#add(a="[",b=tempObj.cget(keywords_t=""),c="]"))
+		).removeDuplicates()
+);
+
+updateFileMetadataFields=#object(
+	a=resourceMetadataWithCheck.idxSet(tempDb,key="@tempId"),
+	b=updateFileMetadataDescription,
+	c=#if(
+		operator=tempObj.cget(description_t=""),
+		operand=metadataGenerationFailedMessage,
+		ne=updateOtherFileMetadataFields
+	),
+	d=deleteTempObj
+).ccall(tempId=newKey);
+
+generateResourceMetadata=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=updateFileMetadataFields.ccall(fileId="@fileId"),
+	c=#solrAddDocs(
+    	darSolr,
+        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")),
+	z=#object(msg="true")
+).ccall(
+	fileId=decalsPostData.cget(fileId="")
+).displayJson();
+
+/decalsGenerateResourceMetadata=generateResourceMetadata;
+
+//--------------------------
+//Delete resource (file/URL)
+
+deleteDocForResource=#object(
+	doc_type="resource_data",
+	doc_version=#decalsLrParaPubDocVersion(),
+	active=#toBoolean(obj="true"),
+	identity=#object(
+		submitter_type="agent",
+		submitter=#decalsLrPublishSubmitter(),
+		curator=#decalsLrPublishCurator()
+	),
+	publishing_node=#decalsLrPublishFromNode(),
+	resource_data_type="none",
+	TOS=#object(
+		submission_TOS="http://www.learningregistry.org/tos/cc0/v0-5/"
+	),
+	payload_placement="none",
+	replaces=#listAdd(a="@lrDocId")
+);
+
+publishDeleteToLr=#object(documents=#listAdd(item=deleteDocForResource)).httpPost(
+	url=#add(a=#decalsLrPublishNode(),b="publish"),
+	contentType="application/json;charset=UTF-8",
+	name="something",
+	multipart="false",
+	authToken=#decalsLrPublishToken()
+);
+
+deleteResourceLrEntry=#if(
+	operator=fileMdObj.cget(lrDocId_t=""),
+	operand="",
+	ne=publishDeleteToLr.ccall(lrDocId=fileMdObj.cget(lrDocId_t=""))
+);
+
+deleteParadataLrEntry=#if(	
+	operator=paraTrackObj,
+	operand="",
+	ne=#if(	
+		operator=paraTrackObj.cget(paradataDocId=""),
+		operand="",
+		ne=publishDeleteToLr.ccall(lrDocId=paraTrackObj.cget(paradataDocId=""))
+	)
+);
+
+deleteResourceParadata=#object(
+	a=#idxDelete(paraTrackDb,key="@resourceUrl"),
+	b=#idxDelete(ratingDb,key="@resourceUrl"),
+	c=#idxDelete(commentDb,key="@resourceUrl")	
+);
+
+deleteFileTypeInfo=#if(
+	operator=fileMdObj.cget(type_t=""),
+	operand="file",
+	eq=#object(
+		a=deleteParadataLrEntry.ccall(resourceUrl=fileMdObj.ccall(fileId="@fileId").cget(url_t="")),
+		b=deleteResourceParadata.ccall(resourceUrl=fileMdObj.ccall(fileId="@fileId").cget(url_t="")),
+		c=removeItemFromAllCollections.ccall(resourceUrl=fileMdObj.ccall(fileId="@fileId").cget(url_t=""))		
+	)
+);
+
+deleteResource=#object(
+	a=deleteFileTypeInfo.ccall(fileId="@fileId"),
+	b=deleteResourceLrEntry.ccall(fileId="@fileId"),		
+	e=#solrDeleteDocs(darSolr,documents="@fileId"),
+	f=#solrDeleteDocs(registrySolr,documents=fileMdObj.ccall(fileId="@fileId").cget(url_t="")),	
+	g=#fileDeleteMetadata(fileMetadataDb,id="@fileId"),
+	h=#fileDeleteFile(fileDb,id="@fileId")
+);
+
+deleteResourceFromApp=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=deleteResource.ccall(fileId=decalsPostData.cget(fileId="")),
+	z=#object(msg="true")
+).cget(z="").displayJson();
+
+/decalsDeleteResource=deleteResourceFromApp;
+
+//--------------------------
+//Transfer resources
+
+transferResource=#object(
+	a=fileMdObj.putInObject(
+		dest="uploadedBy_t",
+		item="@toUserId"
+	).putInObject(
+		dest="transferedFrom_txt",
+		item=#listAdd(
+			a=fileMdObj.cget(transferedFrom_txt=""),
+			b=#object(from="@fromUserId",on=#date(_raw="true"))
+		).removeDuplicates()
+	).idxSet(fileMetadataDb,key="@fileId"),
+	b=#solrAddDocs(darSolr,documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true"))
+);
+
+transferAllResources=allFileMdObj.cforEach(
+	paramName="fileId",
+    op=#if(
+    	operator=fileMdObj.cget(uploadedBy_t=""),
+		operand="@fromUserId",
+		eq=transferResource.ccall(fileId="@fileId")
+	)
+);
+
+transferAllResourcesFromApp=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=transferAllResources.ccall(fromUserId=decalsPostData.cget(fromUserId=""),toUserId=decalsPostData.cget(toUserId="")),
+	z=#object(msg="true")
+).cget(z="").displayJson();
+
+/decalsTransferAllResources=transferAllResourcesFromApp;
+
+//============================
+//Rating
+//============================
+
+//--------------------------
+//Show all ratings
+//***DEBUG: COMMENT OUT OF PROD***
+
+getAllRatings=allRatingObj.displayJson();
+/decalsShowAllRatings=getAllRatings;
+
+//--------------------------
+//Rating information
+
+ratingsForFile=ratingObj.ccall(resourceUrl="@resourceUrl").cget(ratings="");
+
+averageRating=ratingsForFile.cforEach(
+	paramName="ratingIt",
+    op=#toObject(obj="@ratingIt").cget(rating="")
+).valueSet().average().round(_places="2");
+
+ratingInfo=#if(
+	operator=ratingObj,
+	operand="",
+    eq=#object(
+		resourceUrl="@resourceUrl",
+		averageRating=#add(a="0"),
+		numberOfRatings=#add(a="0")
+	),
+    ne=#object(
+		resourceUrl="@resourceUrl",
+		averageRating=averageRating,
+		numberOfRatings=ratingsForFile.count()
+	)
+);
+
+getRatingInfoForUrl=#object(
+	b=ratingInfo.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""))
+).cget(b="").displayJson();
+
+/decalsGetRatingInfoForUrl=getRatingInfoForUrl;
+
+getRatingInfoForUrlGroup=#object(
+	b=#toArray(obj=decalsPostData.cget(resourceUrls="")).cforEach(
+																threaded="false",
+																paramName="rurl",
+																op=ratingInfo.ccall(resourceUrl="@rurl")
+	)
+).cget(b="").displayJson();
+
+/decalsGetRatingInfoForUrlGroup=getRatingInfoForUrlGroup;
+
+//--------------------------
+//Add rating
+
+nonUserRatings=ratingsForFile.cforEach(
+	paramName="ratingIt",
+    op=#if(
+    	operator=#toObject(obj="@ratingIt").cget(userId=""),
+    	operand=sessionUserId,
+    	ne=#toObject(obj="@ratingIt")
+    )   
+).valueSet().removeDuplicates();
+
+addRatingObj=#object(
+	resourceUrl="@resourceUrl",
+	ratings=#listAdd(
+		a=nonUserRatings,
+		b=#object(
+			rating="@rating",
+			createDate=#date(_raw="true"),
+			userId=sessionUserId
+		)
+	)
+);
+
+addRatingToDb=addRatingObj.idxSet(ratingDb,key="@resourceUrl");
+
+addRating=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=addRatingToDb.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""),
+		sessionId=decalsPostData.cget(sessionId=""),
+		rating=decalsPostData.cget(rating="")),
+	c=ratingInfo.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""))
+).cget(c="").displayJson();
+
+/decalsAddRating=addRating;
+
+//============================
+//Comment
+//============================
+
+//--------------------------
+//Show all comments
+//***DEBUG: COMMENT OUT OF PROD***
+
+getAllComments=allCommentObj.displayJson();
+/decalsShowAllComments=getAllComments;
+
+//--------------------------
+//Comment information
+
+commentsForFile=commentObj.ccall(resourceUrl="@resourceUrl").cget(comments="");
+
+numberOfCommentsForFile=commentsForFile.count();
+
+commentInfo=#if(
+	operator=commentObj,
+	operand="",
+    eq=#object(
+		resourceUrl="@resourceUrl",
+		numberOfComments=#add(a="0")
+	),
+    ne=#object(
+		resourceUrl="@resourceUrl",
+		numberOfComments=numberOfCommentsForFile
+	)
+);
+
+getCommentInfoForUrl=#object(
+	b=commentInfo.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""))
+).cget(b="").displayJson();
+
+/decalsGetCommentInfoForUrl=getCommentInfoForUrl;
+
+getCommentInfoForUrlGroup=#object(
+	b=#toArray(obj=decalsPostData.cget(resourceUrls="")).cforEach(
+																threaded="false",
+																paramName="rurl",
+																op=commentInfo.ccall(resourceUrl="@rurl")
+	)
+).cget(b="").displayJson();
+
+/decalsGetCommentInfoForUrlGroup=getCommentInfoForUrlGroup;
+
+getCommentsForUrl=commentsForFile.ccall(resourceUrl=decalsPostData.cget(resourceUrl="")).displayJson();
+
+/decalsGetCommentsForUrl=getCommentsForUrl;
+
+//--------------------------
+//Add comment
+
+addCommentObj=#object(
+	resourceUrl="@resourceUrl",
+	comments=#listAdd(
+		a=commentsForFile,
+		b=#object(
+			commentId=newKey,
+			comment="@comment",
+			createDate=#date(_raw="true"),
+			userId=sessionUserId
+		)
+	)
+);
+
+addCommentToDb=addCommentObj.idxSet(commentDb,key="@resourceUrl");
+
+addComment=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=addCommentToDb.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""),
+		sessionId=decalsPostData.cget(sessionId=""),
+		comment=decalsPostData.cget(comment="")),
+	c=#object(numberOfComments=numberOfCommentsForFile.ccall(resourceUrl=decalsPostData.cget(resourceUrl="")))
+).cget(c="").displayJson();
+
+/decalsAddComment=addComment;
+
+//--------------------------
+//Remove comment
+
+commentsForFileWithRemove=commentsForFile.cforEach(
+	paramName="commentIt",
+    op=#if(
+    	operator=#toObject(obj="@commentIt").cget(commentId=""),
+    	operand="@commentId",
+    	ne=#toObject(obj="@commentIt")
+    )   
+).valueSet().removeDuplicates();
+
+removeCommentObj=#object(
+	resourceUrl="@resourceUrl",
+	comments=commentsForFileWithRemove
+);
+
+removeCommentFromDb=removeCommentObj.idxSet(commentDb,key="@resourceUrl");
+
+removeComment=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=removeCommentFromDb.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""),
+		sessionId=decalsPostData.cget(sessionId=""),
+		commentId=decalsPostData.cget(commentId="")),
+	c=#object(numberOfComments=numberOfCommentsForFile.ccall(resourceUrl=decalsPostData.cget(resourceUrl="")))
+).cget(c="").displayJson();
+
+/decalsRemoveComment=removeComment;
+
+
+//============================
+//Learning Registry
+//============================
+
+//--------------------------
+//Publish 
+// This should do all publish type activities (publish metadata and paradata and delete metadata and paradata depending on the lrPublishPostdata)
+// Probably add a paradata section also so it can be batched without using lrPublishPostdata.
+
+publishToLr=#object(documents=#listAdd(item=#toObject(obj=lrPublishPostdata))).httpPost(
+	url=#add(a=#decalsLrPublishNode(),b="publish"),
+	contentType="application/json;charset=UTF-8",
+	name="something",
+	multipart="false",
+	authToken=#decalsLrPublishToken()
+);
+
+lrPublish=#object(
+    a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+    b=publishToLr
+).cget(b="").displayJson();
+
+/decalsPublishToLr = lrPublish;
+
+//--------------------------
+//Post LR publish
+
+lrSolrObj=#object(
+	url_status="200",
+	description=fileMdObj.cget(description_t=""),
+	source="DECALS Application",
+	flrHarvestDate=#date(dateFormat="yyyy-MM-dd'T'HH:mm:ss'Z'"),
+	title=#listAdd(a=fileMdObj.cget(title_t="")),
+	url=fileMdObj.cget(url_t=""),
+	grade_levels=#listAdd(a=normalizeGradeLevel),
+	keywords=fileMdObj.cget(keywords_txt=""),
+	flrId=fileMdObj.cget(lrDocId_t=""),
+	publisher=fileMdObj.cget(publisher_t=""),
+	id=fileMdObj.cget(url_t=""),
+	create_date=#date(inputMillis=fileMdObj.cget(lrPublishDate_l=""),dateFormat="yyyy-MM-dd'T'HH:mm:ss'Z'"),
+	last_modified=#date(inputMillis=fileMdObj.cget(lrPublishDate_l=""),dateFormat="yyyy-MM-dd'T'HH:mm:ss'Z'"),
+	decalsUser_t=fileMdObj.cget(uploadedBy_t="")
+);
+
+updateResourceLrPublishData=#fileUpdateMetadataField(
+	fileMetadataDb,
+	fileId="@fileId",
+	lrDocId_t=decalsPostData.cget(lrDocId=""),
+	lrPublishDate_l=#date(_raw="true")
+);
+
+updateResourceLrInfo=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=updateResourceLrPublishData.ccall(fileId="@fileId"),
+	c=#solrAddDocs(
+    	darSolr,
+        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")
+    ),
+    d=#solrAddDocs(
+    	registrySolr,
+        documents=lrSolrObj
+    ),
+	z=#object(msg="true")
+).ccall(
+	fileId=decalsPostData.cget(fileId="")
+).cget(z="").displayJson();
+
+/decalsUpdateResourceLrData = updateResourceLrInfo;
+
+
+//--------------------------
+//Paradata
+//--------------------------
+
+solrLrRec=#solrQuery(
+	registrySolr,
+    sq=#add(a="id:",b="@resourceUrl"),
+    rows="1",
+    returnFields=#toArray(obj="flrId"),
+    idSort="false",
+    useCursor="false",  
+    useMustMatchAll="false",
+    start="0"
+);
+
+findSolrLrRecDocId=#if(
+	operator=solrLrRec.cget(total=""),
+	operand="0",
+	eq="",
+	lt="",
+	gt=solrLrRec.cget(items="").getIndex(index="0").cget(flrId="")
+);
+
+findSolrLrRecTitle=#if(
+	operator=solrLrRec.cget(total=""),
+	operand="0",
+	eq="**No title available**",
+	lt="**No title available**",
+	gt=solrLrRec.cget(items="").getIndex(index="0").cget(title="").getIndex(index="0")
+);
+
+//--------------------------
+//Get all paradata tracking
+//***DEBUG: COMMENT OUT OF PROD***
+
+showAllParaTrack=allParaTrackObj.displayJson();
+/decalsShowAllParaTrack=showAllParaTrack;
+
+//--------------------------
+//Update paradata tracking information
+
+updateParaPubInfoObj=#object(
+	resourceUrl="@resourceUrl",	
+	lastPublishDate="@pubDate",
+	paradataDocId="@pdDocId",
+	resourceTitle="@resourceTitle"
+);
+
+updateParaPubInfo=updateParaPubInfoObj.idxSet(paraTrackDb,key="@resourceUrl"); 
+
+updateParaPubInfoApp=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=updateParaPubInfo.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""),
+		pubDate=decalsPostData.cget(pubDate=""),
+		pdDocId=decalsPostData.cget(pdDocId=""),
+		resourceTitle=decalsPostData.cget(resourceTitle="")
+	),
+	c=paraTrackObj.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""))
+).cget(c="").displayJson();
+
+/decalsUpdateParaPubInfo=updateParaPubInfoApp;
+
+//--------------------------
+//Get paradata publish info
+
+paraPubUrls=#listAdd(
+	a=#idxKeys(ratingDb),
+	b=#idxKeys(commentDb),
+	c=#idxKeys(paraTrackDb)
+).removeDuplicates();
+
+noParaPubInfoObj=#object(
+	resourceUrl="@resourceUrl",
+	paradataDocId="",
+	resourceTitle=findSolrLrRecTitle,
+	lastPublishDate="0"
+);
+
+paraPubInfo=#if(
+	operator=paraTrackObj,
+	operand="",
+	eq=noParaPubInfoObj,
+	ne=paraTrackObj
+);
+
+allParaPubInfo=paraPubUrls.cforEach(paramName="ppUrl",op=paraPubInfo.ccall(resourceUrl="@ppUrl"));
+
+getAllParaPubInfo=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=allParaPubInfo
+).cget(b="").displayJson();
+
+/decalsGetAllParaPubInfo=getAllParaPubInfo;
+
+//--------------------------
+//Publish all paradata
+
+minRatingDate=#if(
+	operator=ratingsForFile.count(),
+	operand="0",
+	eq=#toLong(obj="0"),	
+	gt=ratingsForFile.cforEach(
+		paramName="ratingIt",
+    	op=#toObject(obj="@ratingIt").cget(createDate="")
+	).valueSet().min().toLong()
+);
+
+maxRatingDate=#if(
+	operator=ratingsForFile.count(),
+	operand="0",
+	eq=#toLong(obj="0"),	
+	gt=ratingsForFile.cforEach(
+		paramName="ratingIt",
+    	op=#toObject(obj="@ratingIt").cget(createDate="")
+	).valueSet().max().toLong()
+);
+
+minCommentDate=#if(
+	operator=commentsForFile.count(),
+	operand="0",
+	eq=#toLong(obj="0"),	
+	gt=commentsForFile.cforEach(
+		paramName="commentIt",
+    	op=#toObject(obj="@commentIt").cget(createDate="")
+	).valueSet().min().toLong()
+);
+
+maxCommentDate=#if(
+	operator=commentsForFile.count(),
+	operand="0",
+	eq=#toLong(obj="0"),	
+	gt=commentsForFile.cforEach(
+		paramName="commentIt",
+    	op=#toObject(obj="@commentIt").cget(createDate="")
+	).valueSet().max().toLong()
+);
+
+maxParadataDate=#listAdd(a=maxRatingDate,b=maxCommentDate).max().toLong();
+
+commentsForFileArray=commentsForFile.cforEach(
+	paramName="commentIt",
+    op=#object(
+    	createDate=#date(inputMillis=#toObject(obj="@commentIt").cget(createDate=""),dateFormat="yyyy-MM-dd'T'HH:mm:ss'Z'"),
+    	comment=#toObject(obj="@commentIt").cget(comment="")
+    )
+).valueSet();
+
+paradataRatingObj=#object(
+	activity=#object(
+		actor=#object(
+			objectType="community",
+			description=#listAdd(a=#decalsLrPublishParadataActor())
+		),
+		verb=#object(		
+			action="rated",
+			measure=#object(			
+				measureType="star average",
+				value=ratingInfo.cget(averageRating=""),
+				scaleMin=#toLong(obj="1"),
+				scaleMax=#toLong(obj="5"),`
+				sampleSize=ratingInfo.cget(numberOfRatings="")
+			),
+			context=#decalsLrPublishCurator(),
+			date=#add(
+				a=#date(inputMillis=minRatingDate,dateFormat="yyyy-MM-dd"),
+				b="/",
+				c=#date(inputMillis=maxRatingDate,dateFormat="yyyy-MM-dd")
+			)
+		),
+		content=#add(
+			a=ratingInfo.cget(numberOfRatings=""),
+			b=" member(s) of the ",
+			c=#decalsLrPublishParadataActor(),
+			d=" gave '",
+			e="@resourceTitle",
+			f="' a rating of ",
+			g=ratingInfo.cget(averageRating=""),
+			h=" out of 5 stars",
+		)
+	)
+);
+
+paradataCommentObj=#object(
+	activity=#object(
+		actor=#object(
+			objectType="community",
+			description=#listAdd(a=#decalsLrPublishParadataActor())
+		),
+		verb=#object(		
+			action="commented",
+			measure=#object(			
+				measureType="count",
+				value=commentInfo.cget(numberOfComments=""),				
+			),
+			context=#decalsLrPublishCurator(),
+			date=#add(
+				a=#date(inputMillis=minCommentDate,dateFormat="yyyy-MM-dd"),
+				b="/",
+				c=#date(inputMillis=maxCommentDate,dateFormat="yyyy-MM-dd")
+			),
+			description=#add(
+				a=commentInfo.cget(numberOfComments=""),
+				b=" member(s) of the ",
+				c=#decalsLrPublishParadataActor(),
+				d=" commented on '",
+				e="@resourceTitle",
+				f="'"
+			)
+		),
+		content=commentsForFileArray
+	)
+);
+
+paradataArray=#if(
+	operator=ratingsForFile.count(),
+	operand="0",
+	eq=#if(
+		operator=commentsForFile.count(),
+		operand="0",
+		eq=#listAdd(),
+		gt=#listAdd(a=paradataCommentObj)
+	)	
+	gt=#if(
+		operator=commentsForFile.count(),
+		operand="0",
+		eq=#listAdd(a=paradataRatingObj),
+		gt=#listAdd(a=paradataRatingObj,b=paradataCommentObj)
+	)
+);
+
+paradataResourcePayload=#object(
+	collection=#object(
+		items=#if(
+			operator=ratingsForFile.count(),
+			operand="0",
+			eq=#if(
+				operator=commentsForFile.count(),
+				operand="0",
+				eq=#listAdd(),
+				gt=#listAdd(a=paradataCommentObj)
+			),	
+			gt=#if(
+				operator=commentsForFile.count(),
+				operand="0",
+				eq=#listAdd(a=paradataRatingObj),
+				gt=#listAdd(a=paradataRatingObj,b=paradataCommentObj)
+			)
+		)
+	)
+);
+
+paradataDocForResourceRaw=#object(
+	doc_type="resource_data",
+	doc_version=#decalsLrParaPubDocVersion(),
+	active=#toBoolean(obj="true"),
+	identity=#object(
+		submitter_type="agent",
+		submitter=#decalsLrPublishSubmitter(),
+		curator=#decalsLrPublishCurator()
+	),
+	publishing_node=#decalsLrPublishFromNode(),
+	resource_data_type="paradata",
+	TOS=#object(
+		submission_TOS="http://www.learningregistry.org/tos/cc0/v0-5/"
+	),
+	resource_locator="@resourceUrl",
+	payload_placement="inline",
+	payload_schema=#listAdd(a="LR Paradata 1.0"),
+	payload_schema_locator="https://docs.google.com/a/eduworks.com/document/d/1IrOYXd3S0FUwNozaEG5tM7Ki4_AZPrBn-pbyVUz-Bh0/edit?hl=en_US#",
+	resource_data=paradataResourcePayload
+);
+
+paradataDocForResource=#if(
+	operator=paraTrackObj.cget(paradataDocId=""),
+	operand="",
+	eq=paradataDocForResourceRaw,
+	ne=paradataDocForResourceRaw.putInObject(dest="replaces", item=#listAdd(a=paraTrackObj.cget(paradataDocId="")))
+);
+
+publishParadataToLr=#object(documents=#listAdd(item=paradataDocForResource)).httpPost(
+	url=#add(a=#decalsLrPublishNode(),b="publish"),
+	contentType="application/json;charset=UTF-8",
+	name="something",
+	multipart="false",
+	authToken=#decalsLrPublishToken()
+);
+
+publishResourceParadata=#if(
+	operator=#toObject(obj="@pubRet").cget(OK=""),
+	operand="true",
+	eq=#if(
+		operator=#toObject(obj="@pubRet").cget(document_results="").getIndex(index="0").cget(OK=""),
+		operand="true",
+		eq=#object(
+			a=updateParaPubInfo.ccall(
+				resourceUrl="@resourceUrl",
+				pubDate=#date(_raw="true"),
+				pdDocId=#toObject(obj="@pubRet").cget(document_results="").getIndex(index="0").cget(doc_ID=""),
+				resourceTitle="@resourceTitle"
+			),
+			b=#object(ok="true",id=#toObject(obj="@pubRet").cget(document_results="").getIndex(index="0").cget(doc_ID=""))
+		).cget(b=""),
+		ne=#object(ok="false",message=#toObject(obj="@pubRet").cget(document_results="").getIndex(index="0").cget(error=""))
+	),
+	ne=#object(ok="false",message="Could not connect to the Learning Registry: Invalid out envelope.")
+).ccall(pubRet=publishParadataToLr);
+
+publishResourceParadataFromApp=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=publishResourceParadata.ccall(resourceTitle=findSolrLrRecTitle)
+).ccall(resourceUrl=decalsPostData.cget(resourceUrl="")).cget(b="").displayJson();
+
+/decalsPublishResourceParadata=publishResourceParadataFromApp;
+
+publishAllResourceParadata=#object(
+	a=allParaPubInfo.valueSet().cforEach(
+		paramName="ppi",
+		op=#if(
+			operator=#toObject(obj="@ppi").cget(lastPublishDate="").toLong(),
+			operand=maxParadataDate.ccall(resourceUrl=#toObject(obj="@ppi").cget(resourceUrl="")),
+			lt=publishResourceParadata.ccall(
+				resourceTitle=findSolrLrRecTitle.ccall(resourceUrl=#toObject(obj="@ppi").cget(resourceUrl="")),
+				resourceUrl=#toObject(obj="@ppi").cget(resourceUrl="")
+			)
+		)
+	),
+	b=allParaPubInfo
+).cget(b="");
+
+publishAllResourceParadataFromApp=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=publishAllResourceParadata
+).cget(b="").displayJson();
+
+/decalsPublishAllResourceParadata=publishAllResourceParadataFromApp;
+
+//============================
+//User
+//============================
+
+userObj=#idxGet(userDb,key="@userId").toObject();
+allUserObj=#idxKeys(userDb).cforEach(paramName="userId",op=userObj);
+
+checkUserExists=#userExists(
+	indexDir=#decalsUserDbDirectory(), 
+	databaseName=#decalsUserDbName(), 
+	index=#decalsUserDbIndexName(), 
+	userId="@userId"
+);
+
+safeUserRecord=#userGet(userDb,userId="@userId").remove(
+	password="",
+	sessionId="",
+	lastIp="",	
+	datePasswordUpdated=""
+);
+
+//--------------------------
+//Show all users
+//***DEBUG: COMMENT OUT OF PROD***
+
+getAllUsers=allUserObj.displayJson();
+/decalsShowAllUsers=getAllUsers;
+
+//--------------------------
+//Create user
+
+putUserInDb=#userCreate(
+		userId=decalsPostData.cget(userId=""),
+        password=decalsPostData.cget(password=""),
+        userDb
+);
+
+addNewUserFields=#userUpdateField(
+	userDb, 
+	userId=decalsPostData.cget(userId=""), 
+	dateCreated=#date(_raw="true"),	
+	datePasswordUpdated=#date(_raw="true"),
+	firstName=decalsPostData.cget(firstName=""),
+	lastName=decalsPostData.cget(lastName=""),
+	email=decalsPostData.cget(email=""),
+);
+
+createUser=#if(
+	operator=checkUserExists.ccall(userId=decalsPostData.cget(userId="")),
+    operand="true",
+    eq=#object(msg="User exists"),
+    ne=#object(
+		a=putUserInDb,
+		b=addNewUserFields,
+		c=#object(msg="true")
+	).cget(c="")    
+).displayJson();
+ 
+/decalsCreateUser=createUser;
+
+/--------------------------
+//Login
+
+tryLogin=#if(
+	operator=#userLogin(
+		userDb,
+		userId="@userId", 
+        password="@password"
+	),
+    operand="true",
+    eq="true",
+    ne="false"
+);
+
+deleteOldSession=#if(
+	operator=#userGet(
+		userDb, 
+		userId="@userId"
+	).get(sessionId=""), 
+	operand="", 
+	ne=#sessionDelete.ccall(
+		sessionDb, 
+		sessionId=#userGet(
+			userDb, 
+			userId="@userId"
+		).get(sessionId="")
+	)
+);
+
+addUserLoginFields=#userUpdateField(
+	userDb, 
+	sessionId="@sessionId", 
+	lastLogin=#date(_raw="true")
+);
+
+//invalid password here would fail out with {"error":"Authentication Failed."}
+loginWithSessionMgt=#if(
+	operator=tryLogin.ccall(userId="@userId",password="@password"),
+    operand="true",
+    eq=#object(
+    	a=deleteOldSession.ccall(userId="@userId"),
+    	b=addUserLoginFields.ccall(sessionId="@sessionId").buildArguments(remove="password", hard="true"),
+    	c="@sessionId"
+    ).ccall(
+    	sessionId=#sessionCreate(
+    		sessionDb, 
+    		expires=#date(addHours="1", _raw="true")
+    	)
+    ).buildArguments(remove="password", hard="true")
+).cget(c="");
+
+login=#if(
+	operator=checkUserExists.ccall(userId=decalsPostData.cget(userId="")),
+    operand="true",
+    eq=loginWithSessionMgt.ccall(
+    	userId=decalsPostData.cget(userId=""),
+    	password=decalsPostData.cget(password=""),
+    ),
+    ne=#object(msg="Invalid username")	    
+).displayJson(); 
+
+/decalsLogin=login;
+
+/--------------------------
+//Logout
+
+clearUserSession=#userUpdateField(
+	userDb, 
+	sessionId=""
+);
+
+logout=#object(
+    a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=deleteOldSession,
+	c=clearUserSession,
+	d=#object(msg="true")
+).ccall(
+    	userId=decalsPostData.cget(userId="")
+).cget(d="").displayJson();
+
+/decalsLogout=logout;
+
+//--------------------------
+// Check user role
+
+invalidRoleError=#error(code="401",msg=#object(error="Invalid role for task"));
+
+userHasRole=#if(
+	operator=safeUserRecord.cget(roles="").has(has="@roleId"),
+	operand="true",
+	eq="true",
+	ne="false"
+);
+
+hasUserManagerPrivileges=#if(
+	operator=userHasRole.ccall(roleId=#decalsAdminRoleId()),
+	operand="true",
+	eq="true",
+	ne=#if(
+		operator=userHasRole.ccall(roleId=#decalsUserManagerRoleId()),
+		operand="true",
+		eq="true",
+		ne="false"
+	)
+);
+
+hasAdminPrivileges=#if(
+	operator=userHasRole.ccall(roleId=#decalsAdminRoleId()),
+	operand="true",
+	eq="true",
+	ne="false"
+);
+
+checkHasAdminPrivileges = #if(	
+	operator=hasAdminPrivileges, 
+	operand="false", 
+	eq=invalidRoleError
+);
+
+checkHasUserManagerPrivileges = #if(	
+	operator=hasUserManagerPrivileges, 
+	operand="false", 
+	eq=invalidRoleError
+);
+
+//--------------------------
+// Add user role
+
+addRoleToUser=#userGet(
+	userDb,
+	userId="@userId"
+).putInObject(
+	dest="roles",
+	item=#listAdd(
+		a=#userGet(userDb,userId="@userId").cget(roles=""),
+		b=#toLower(obj="@roleId")
+	).removeDuplicates()
+).idxSet(userDb,key="@userId");
+
+addUserRole=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=#if(
+		operator=decalsPostData.cget(roleId="").toLower(),
+		operand=#decalsAdminRoleId(),
+		eq=checkHasAdminPrivileges.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId=""))),
+		ne=checkHasUserManagerPrivileges.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId="")))
+	),
+	c=addRoleToUser.ccall(userId=decalsPostData.cget(userId=""),roleId=decalsPostData.cget(roleId="")),
+	d=safeUserRecord.ccall(userId=decalsPostData.cget(userId=""))
+).cget(d="").displayJson();
+
+/decalsAddUserRole=addUserRole; 
+
+//--------------------------
+// Remove user role
+
+removeRoleFromUser=#userGet(
+	userDb,
+	userId="@userId"
+).putInObject(
+	dest="roles",
+	item=#userGet(userDb,userId="@userId").cget(roles="").removeFromArray(item=decalsPostData.cget(roleId="").toLower())
+).idxSet(userDb,key="@userId");
+
+removeUserRole=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=#if(
+		operator=decalsPostData.cget(roleId="").toLower(),
+		operand=#decalsAdminRoleId(),
+		eq=checkHasAdminPrivileges.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId=""))),
+		ne=checkHasUserManagerPrivileges.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId="")))
+	),
+	c=removeRoleFromUser.ccall(userId=decalsPostData.cget(userId="")),
+	d=safeUserRecord.ccall(userId=decalsPostData.cget(userId=""))
+).cget(d="").displayJson();
+
+/decalsRemoveUserRole=removeUserRole;
+
+//--------------------------
+// Get user info
+
+getUser=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=safeUserRecord.ccall(userId=decalsPostData.cget(userId=""))
+).cget(b="").displayJson();
+
+/decalsGetUser=getUser;
+
+//--------------------------
+// Get user list
+
+safeUserList=#idxKeys(userDb).cforEach(paramName="userId",op=safeUserRecord);
+
+getUserList=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=safeUserList
+).cget(b="").displayJson();
+
+/decalsGetUserList=getUserList;
+
+//--------------------------
+// Get admin list
+
+safeAdminList=#idxKeys(userDb).cforEach(
+	paramName="userId",
+	op=#if(
+		operator=userHasRole.ccall(roleId=#decalsAdminRoleId()),
+		operand="true",
+		eq=safeUserRecord
+	)
+);
+
+getAdminList=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=safeAdminList
+).cget(b="").displayJson();
+
+/decalsGetAdminList=getAdminList;
+
+//--------------------------
+// Get user manager list
+
+safeUserManagerList=#idxKeys(userDb).cforEach(
+	paramName="userId",
+	op=#if(
+		operator=userHasRole.ccall(roleId=#decalsUserManagerRoleId()),
+		operand="true",
+		eq=safeUserRecord
+	)
+);
+
+getUserManagerList=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=safeUserManagerList
+).cget(b="").displayJson();
+
+/decalsGetUserManagerList=getUserManagerList;
+
+
+//--------------------------
+// Reset user password
+
+resetUserPassword=#userUpdateField(
+	userDb, 
+	userId="@userId",
+	datePasswordUpdated=#date(_raw="true"),
+	password=#bCryptHash(
+		password=decalsPostData.cget(newPassword=""),
+		rounds="10"
+	)	
+);
+
+resetUserPasswordFromAdmin=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkHasUserManagerPrivileges.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId=""))),
+	c=resetUserPassword.ccall(userId=decalsPostData.cget(userId="")),
+	d=#object(msg="true")
+).cget(d="").displayJson();
+
+/decalsResetUserPasswordFromAdmin=resetUserPasswordFromAdmin
+
+//--------------------------
+// Delete user
+
+deleteUserResources=allFileMdObj.cforEach(
+	paramName="fileId",
+    op=#if(
+    	operator=fileMdObj.cget(uploadedBy_t=""),
+		operand="@userId",
+		eq=deleteResource
+	)
+);
+
+deleteUser=#idxDelete(userDb,key="@userId");
+
+deleteUserAndResources=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkHasUserManagerPrivileges.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId=""))),
+	c=deleteUserResources.ccall(userId=decalsPostData.cget(userId="")),
+	d=deleteOldSession.ccall(userId=decalsPostData.cget(userId="")),
+	e=removeUserFromAllCollections.ccall(userId=decalsPostData.cget(userId="")),
+	y=deleteUser.ccall(userId=decalsPostData.cget(userId="")),
+	z=#object(msg="true")
+).cget(z="").displayJson();
+
+/decalsDeleteUserAndResources = deleteUserAndResources;
+
+deleteUserTransferResources=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkHasUserManagerPrivileges.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId=""))),
+	c=transferAllResources.ccall(fromUserId=decalsPostData.cget(userId=""),toUserId=decalsPostData.cget(toUserId="")),
+	d=deleteOldSession.ccall(userId=decalsPostData.cget(userId="")),
+	e=removeUserFromAllCollections.ccall(userId=decalsPostData.cget(userId="")),
+	y=deleteUser.ccall(userId=decalsPostData.cget(userId="")),
+	z=#object(msg="true")
+).cget(z="").displayJson();
+
+/decalsDeleteUserTransferResources = deleteUse
+
+//--------------------------
+// Initial user
+//
+//Should be run once and deleted.  
+//Change values as appropriate
+//--------------------------
+
+initialAdminPassword=#add(a="<INITIAL ADMIN PASSWORD>");
+
+putInitialUserInDb=#object(
+	password=#bCryptHash(
+		password=initialAdminPassword,
+		rounds="10"
+	),
+	dateCreated=#date(_raw="true"),	
+	datePasswordUpdated=#date(_raw="true"),
+	firstName="DECALS",
+	lastName="Admin",
+	email="@userId",
+	roles=#listAdd(a=#decalsAdminRoleId())
+).idxSet(userDb,key="@userId");
+
+createFirstAdminUser=#object(
+	a=putInitialUserInDb,
+	b=#idxGet(userDb,key="@userId")
+).ccall(userId="decalsadmin@decals.com").cget(a="").displayJson();
+ 
+/decalsInitAdminUser=createFirstAdminUser;
