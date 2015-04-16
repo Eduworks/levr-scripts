@@ -52,6 +52,12 @@ viewAccess = #string(str="view");
 modifyAccess = #string(str="modify");
 
 //============================
+// Group types
+//============================
+publicGroup = #string(str="public");
+privateGroup = #string(str="private");
+
+//============================
 // DECALS Base Directory
 //============================
 
@@ -91,6 +97,9 @@ fullFileDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=fileDbDirector
 fileMetadataDbDirectoryName = #string(str="dbFileMetadata");
 fullFileMetadataDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=fileMetadataDbDirectoryName);
 
+groupDbDirectoryName = #string(str="dbGroups");
+fullGroupDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=groupDbDirectoryName);
+
 //============================
 // IDX Database Names
 //
@@ -105,6 +114,7 @@ sessionDbName = #string(str="sessions");
 fileDbName = #string(str="files");
 fileMetadataDbName = #string(str="fileMetadatas");
 collectionDbName = #string(str="collections");
+groupDbName = #string(str="groups");
 
 //============================
 // IDX Index Names
@@ -121,6 +131,7 @@ sessionDbIndex = #string(str="session");
 fileDbIndex = #string(str="file");
 fileMetadataDbIndex = #string(str="fileMetadata");
 collectionDbIndex = #string(str="collection");
+groupDbIndex = #string(str="group");
 
 //============================
 // LEVR Service Calls exposing the config settings
@@ -184,8 +195,15 @@ collectionDbIndex = #string(str="collection");
 #decalsFileMetadataDbName = fileMetadataDbName;
 #decalsFileMetadataDbIndexName = fileMetadataDbIndex;
 
+#decalsGroupDbDirectory = fullGroupDbDirectory;
+#decalsGroupDbName = groupDbName;
+#decalsGroupDbIndexName = groupDbIndex;
+
 #decalsAdminRoleId = adminRoleId;
 #decalsUserManagerRoleId = userManagerRoleId;
 
 #decalsViewAccess = viewAccess;
 #decalsModifyAccess = modifyAccess;
+
+#decalsPublicGroupType = publicGroup;
+#decalsPrivateGroupType = privateGroup;

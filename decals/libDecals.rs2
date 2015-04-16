@@ -55,6 +55,12 @@ fileMetadataDb={
 	index=#decalsFileMetadataDbIndexName() 
 };
 
+groupDb={
+	indexDir=#decalsGroupDbDirectory(),
+	databaseName=#decalsGroupDbName(),
+	index=#decalsGroupDbIndexName() 
+};
+
 //============================
 //SOLR config
 
@@ -65,6 +71,13 @@ darSolr = {
 registrySolr = {
     url=#decalsRegistrySolrUrl()
 };
+
+//============================
+//Errors
+invalidAccessError=#error(code="401",msg=#object(error="Invalid access for task"));
+invalidRoleError=#error(code="401",msg=#object(error="Invalid role for task"));
+invalidSessionError=#error(code="401",msg=#object(error="Invalid session"));
+sessionExpiredError=#error(code="401",msg=#object(error="Session expired"));
 
 //============================
 //Helpers
@@ -96,6 +109,9 @@ allTempObj=#idxKeys(tempDb).cforEach(paramName="tempId",op=tempObj);
 
 deleteTempObj=#idxDelete(tempDb,key="@tempId");
 
+groupObj=#idxGet(groupDb,key="@groupId").toObject();
+allGroupObj=#idxKeys(groupDb).cforEach(paramName="groupId",op=groupObj);
+
 inFile=#getFileFromPost().getIndex(index="0");
 
 newKey=#generateUUID();
@@ -104,6 +120,54 @@ timeStamp=#add(
 	a=#date(dateFormat="yyyy-MM-dd"),
 	b="T",
 	c=#date(dateFormat="hh:mm:ss")
+);
+
+safeUserRecord=#userGet(userDb,userId="@userId").remove(
+	password="",
+	sessionId="",
+	lastIp="",	
+	datePasswordUpdated=""
+);
+
+//--------------------------
+// Check user role
+
+userHasRole=#if(
+	operator=safeUserRecord.cget(roles="").has(has="@roleId"),
+	operand="true",
+	eq="true",
+	ne="false"
+);
+
+hasUserManagerPrivileges=#if(
+	operator=userHasRole.ccall(roleId=#decalsAdminRoleId()),
+	operand="true",
+	eq="true",
+	ne=#if(
+		operator=userHasRole.ccall(roleId=#decalsUserManagerRoleId()),
+		operand="true",
+		eq="true",
+		ne="false"
+	)
+);
+
+hasAdminPrivileges=#if(
+	operator=userHasRole.ccall(roleId=#decalsAdminRoleId()),
+	operand="true",
+	eq="true",
+	ne="false"
+);
+
+checkHasAdminPrivileges = #if(	
+	operator=hasAdminPrivileges, 
+	operand="false", 
+	eq=invalidRoleError
+);
+
+checkHasUserManagerPrivileges = #if(	
+	operator=hasUserManagerPrivileges, 
+	operand="false", 
+	eq=invalidRoleError
 );
 
 //============================
@@ -233,28 +297,12 @@ getWikiInfoDisplay=getWikiInfo.valueSet().cgetIndex(index="0").displayJson();
 
 /decalsWikiInfo=getWikiInfoDisplay;
 
-tomTest = #object(
-	a=#decalsLrSearchApiKey(),
-	b=#decalsMashapeKey(),
-	c=#decalsTextKeywordsServiceUrl(),
-	d=#decalsWordDefineServiceUrl(),
-	e=#decalsWikiInfoServiceUrl(),
-	f=#decalsTextNounsServiceUrl(),
-	g=#decalsGenerateMetadataServiceUrl(),
-	h=#decalsBasicLrSearchUrl()	
-).displayJson();
-
-/tomTest = tomTest;
-
 //============================
 //Session
 //============================
 
 sessionObj=#idxGet(sessionDb,key="@sessionId").toObject();
 allSessionObj=#idxKeys(sessionDb).cforEach(paramName="sessionId",op=sessionObj);
-
-invalidSessionError=#error(code="401",msg=#object(error="Invalid session"));
-sessionExpiredError=#error(code="401",msg=#object(error="Session expired"));
 
 //--------------------------
 //Check session
@@ -355,10 +403,215 @@ normalizeGradeLevelDj=normalizeGradeLevel.displayJson();
 /decalsNormalizeGradeLevel=normalizeGradeLevelDj;
 
 //============================
-//Collections
+//Groups
 //============================
 
-invalidAccessError=#error(code="401",msg=#object(error="Invalid access for task"));
+userCanModifyGroup = #if(
+	operator=groupObj.cget(type=""),
+	operand=#decalsPublicGroupType(),
+	eq=#if(
+		operator=hasUserManagerPrivileges,
+		operand="true",
+		eq="true",
+		ne="false"
+	),
+	ne=#if(
+		operator=groupObj.cget(creator=""),
+		operand="@userId",
+		eq="true",
+		ne="false"
+	)
+);
+
+checkUserCanModifyGroup = #if(	
+	operator=userCanModifyGroup, 
+	operand="false", 
+	eq=invalidAccessError
+);
+
+usersForGroup=groupObj.cget(users="");
+
+usersForGroupMinusUser=usersForGroup.cforEach(
+	paramName="guIt",
+    op=#if(
+    	operator=#toObject(obj="@guIt").cget(userId=""),
+    	operand="@userId",
+    	ne=#toObject(obj="@guIt")
+    )   
+).valueSet();
+
+groupHasUser = usersForGroup.cforEach(
+	paramName="guIt",
+    op=#toObject(obj="@guIt").cget(userId="")
+).valueSet().has(has="@userId");
+
+//--------------------------
+//Show all groups
+//***DEBUG: COMMENT OUT OF PROD***
+
+getAllGroups=allGroupObj.displayJson();
+/decalsShowAllGroups=getAllGroups;
+
+//--------------------------
+//Add group
+
+newGroupObj=#object(
+	groupId="@groupId",
+	name="@groupName",
+	creator="@userId",
+	type="@groupType",
+	createdDate=#date(_raw="true"),
+	updatedDate=#date(_raw="true")	
+);
+
+createGroup=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=newGroupObj.ccall(
+		groupName=decalsPostData.cget(groupName=""),
+		groupType=decalsPostData.cget(groupType=""),
+		userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId=""))
+	).idxSet(groupDb,key="@groupId"),
+	d=groupObj
+).ccall(groupId=newKey).cget(d="").displayJson();
+
+/decalsCreateGroup = createGroup;
+
+//--------------------------
+//Delete group
+
+deleteGroup=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkUserCanModifyGroup.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId=""))),
+	c=#idxDelete(groupDb,key="@groupId"),
+	d=#object(msg="true")
+).ccall(groupId=decalsPostData.cget(groupId="")).cget(d="").displayJson();
+
+/decalsDeleteGroup = deleteGroup;
+
+//--------------------------
+//Add users to group
+
+addGroupUsersToDb=groupObj.putInObject(
+	dest="users",
+	item=#listAdd(
+			a=groupObj.cget(users=""),
+			b=decalsPostData.cget(users="")
+	).removeDuplicates()
+).putInObject(
+	dest="updatedDate",
+	item=#date(_raw="true")
+).idxSet(groupDb,key="@groupId");
+
+addGroupUsers=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkUserCanModifyGroup.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId=""))),
+	c=addGroupUsersToDb,
+	d=groupObj
+).ccall(groupId=decalsPostData.cget(groupId="")).cget(d="").displayJson();
+
+/decalsAddGroupUsers = addGroupUsers;
+
+//--------------------------
+//Remove user from group
+
+removeGroupUserFromDb=groupObj.putInObject(
+	dest="users",
+	item=usersForGroupMinusUser
+).putInObject(
+	dest="updatedDate",
+	item=#date(_raw="true")
+).idxSet(groupDb,key="@groupId");
+
+removeGroupUser=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=checkUserCanModifyGroup.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId=""))),
+	c=removeGroupUserFromDb.ccall(userId=decalsPostData.cget(userId="")),
+	d=groupObj
+).ccall(groupId=decalsPostData.cget(groupId="")).cget(d="").displayJson();
+
+/decalsRemoveGroupUser = removeGroupUser;
+
+//--------------------------
+//Remove user from all groups
+
+removeUserFromAllGroups=allGroupObj.cforEach(
+	paramName="groupId",
+    op=#if(
+    	operator=groupHasUser,
+		operand="true",
+		eq=groupObj.putInObject(
+			dest="users",
+			item=#listAdd(
+				a=usersForGroupMinusUser
+			)
+		).idxSet(groupDb,key="@groupId")
+	)
+);
+
+//--------------------------
+//Get public groups
+
+publicGroups=allGroupObj.cforEach(
+	paramName="groupId",
+    op=#if(
+    	operator=groupObj.cget(type=""),
+		operand=#decalsPublicGroupType(),
+		eq=groupObj
+	)
+);
+
+getPublicGroups=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=publicGroups
+).cget(b="").displayJson();
+
+/decalsGetPublicGroups=getPublicGroups;
+
+//--------------------------
+//Get user private groups
+
+userPrivateGroups=allGroupObj.cforEach(
+	paramName="groupId",
+    op=#if(
+    	operator=groupObj.cget(type=""),
+		operand=#decalsPrivateGroupType(),
+		eq=#if(
+    		operator=groupObj.cget(creator=""),
+			operand="@userId",
+			eq=groupObj
+		)
+	)
+);
+
+getUserPrivateGroups=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=userPrivateGroups.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId="")))
+).cget(b="").displayJson();
+
+/decalsGetUserPrivateGroups=getUserPrivateGroups;
+
+//--------------------------
+//Get user member groups
+
+userMemberGroups=allGroupObj.cforEach(
+	paramName="groupId",
+    op=#if(
+    	operator=groupHasUser,
+		operand="true",
+		eq=groupObj
+	)
+);
+
+getUserMemberGroups=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+	b=userMemberGroups.ccall(userId=decalsPostData.cget(userId=""))
+).cget(b="").displayJson();
+
+/decalsGetUserMemberGroups=getUserMemberGroups;
+
+//============================
+//Collections
+//============================
 
 newCollectionUserObj=#object(
 	userId="@userId",
@@ -651,8 +904,6 @@ updateCollectionDb=collectionObj.putInObject(
 	dest="updatedDate",
 	item=#date(_raw="true")
 ).idxSet(collectionDb,key="@collectionId");
-
-//
 
 updateCollection=#object(
 	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
@@ -1635,13 +1886,6 @@ checkUserExists=#userExists(
 	userId="@userId"
 );
 
-safeUserRecord=#userGet(userDb,userId="@userId").remove(
-	password="",
-	sessionId="",
-	lastIp="",	
-	datePasswordUpdated=""
-);
-
 //--------------------------
 //Show all users
 //***DEBUG: COMMENT OUT OF PROD***
@@ -1762,49 +2006,6 @@ logout=#object(
 ).cget(d="").displayJson();
 
 /decalsLogout=logout;
-
-//--------------------------
-// Check user role
-
-invalidRoleError=#error(code="401",msg=#object(error="Invalid role for task"));
-
-userHasRole=#if(
-	operator=safeUserRecord.cget(roles="").has(has="@roleId"),
-	operand="true",
-	eq="true",
-	ne="false"
-);
-
-hasUserManagerPrivileges=#if(
-	operator=userHasRole.ccall(roleId=#decalsAdminRoleId()),
-	operand="true",
-	eq="true",
-	ne=#if(
-		operator=userHasRole.ccall(roleId=#decalsUserManagerRoleId()),
-		operand="true",
-		eq="true",
-		ne="false"
-	)
-);
-
-hasAdminPrivileges=#if(
-	operator=userHasRole.ccall(roleId=#decalsAdminRoleId()),
-	operand="true",
-	eq="true",
-	ne="false"
-);
-
-checkHasAdminPrivileges = #if(	
-	operator=hasAdminPrivileges, 
-	operand="false", 
-	eq=invalidRoleError
-);
-
-checkHasUserManagerPrivileges = #if(	
-	operator=hasUserManagerPrivileges, 
-	operand="false", 
-	eq=invalidRoleError
-);
 
 //--------------------------
 // Add user role
@@ -1962,6 +2163,7 @@ deleteUserAndResources=#object(
 	c=deleteUserResources.ccall(userId=decalsPostData.cget(userId="")),
 	d=deleteOldSession.ccall(userId=decalsPostData.cget(userId="")),
 	e=removeUserFromAllCollections.ccall(userId=decalsPostData.cget(userId="")),
+	f=removeUserFromAllGroups.ccall(userId=decalsPostData.cget(userId="")),
 	y=deleteUser.ccall(userId=decalsPostData.cget(userId="")),
 	z=#object(msg="true")
 ).cget(z="").displayJson();
