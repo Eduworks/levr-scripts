@@ -895,6 +895,9 @@ updateCollectionDb=collectionObj.putInObject(
 	dest="name",
 	item=decalsPostData.cget(collectionData="").cget(name="")
 ).putInObject(
+	dest="groups",
+	item=decalsPostData.cget(collectionData="").cget(groups="")
+).putInObject(
 	dest="users",
 	item=decalsPostData.cget(collectionData="").cget(users="")
 ).putInObject(
