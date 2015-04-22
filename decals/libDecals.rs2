@@ -479,14 +479,49 @@ createGroup=#object(
 //--------------------------
 //Delete group
 
+groupsForCollection=collectionObj.cget(groups="");
+
+groupsForCollectionMinusGroup=groupsForCollection.cforEach(
+	paramName="cgIt",
+    op=#if(
+    	operator=#toObject(obj="@cgIt").cget(groupId=""),
+    	operand="@groupId",
+    	ne=#toObject(obj="@cgIt")
+    )   
+).valueSet();
+
+collectionHasGroup = groupsForCollection.cforEach(
+	paramName="cgIt",
+    op=#toObject(obj="@cgIt").cget(groupId="")
+).valueSet().has(has="@groupId");
+
+removeGroupFromAllCollections=allCollectionObj.cforEach(
+	paramName="collectionId",
+    op=#if(
+    	operator=collectionHasGroup,
+		operand="true",
+		eq=collectionObj.putInObject(
+			dest="groups",
+			item=#listAdd(
+				a=groupsForCollectionMinusGroup
+			)
+		).idxSet(collectionDb,key="@collectionId")
+	)
+);
+
 deleteGroup=#object(
+	a=removeGroupFromAllCollections,
+	z=#idxDelete(groupDb,key="@groupId")
+);
+
+deleteGroupFromApp=#object(
 	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
 	b=checkUserCanModifyGroup.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId=""))),
-	c=#idxDelete(groupDb,key="@groupId"),
+	c=deleteGroup,
 	d=#object(msg="true")
 ).ccall(groupId=decalsPostData.cget(groupId="")).cget(d="").displayJson();
 
-/decalsDeleteGroup = deleteGroup;
+/decalsDeleteGroup = deleteGroupFromApp;
 
 //--------------------------
 //Add users to group
@@ -659,6 +694,11 @@ collectionHasUser = usersForCollection.cforEach(
     op=#toObject(obj="@cuIt").cget(userId="")
 ).valueSet().has(has="@userId");
 
+collectionHasMemberGroup = userMemberGroups.keySet().cforEach(
+    	paramName="groupId",
+    	op = collectionHasGroup.toString()
+).valueSet().has(has="true");
+
 userAccessForCollection = usersForCollection.cforEach(
 	paramName="cuIt",
     op=#if(
@@ -668,15 +708,34 @@ userAccessForCollection = usersForCollection.cforEach(
     )
 ).valueSet().getIndex(index="0");
 
+groupAccessForCollection = groupsForCollection.cforEach(
+	paramName="cgIt",
+    op=#if(
+    	operator=#toObject(obj="@cgIt").cget(groupId=""),
+    	operand="@groupId",
+    	eq=#toObject(obj="@cgIt").cget(access="")
+    )
+).valueSet().getIndex(index="0");
+
+userGroupAccessForCollection = userMemberGroups.keySet().cforEach(
+    	paramName="groupId",
+    	op = groupAccessForCollection
+);
+
 userCanModifyCollection = #if(
-	operator=collectionHasUser,
-	operand="false",
-	eq="false",
+	operator=userAccessForCollection,
+	operand=#decalsModifyAccess(),
+	eq="true",
 	ne=#if(
 		operator=userAccessForCollection,
-		operand=#decalsModifyAccess(),
-		eq="true",
-		ne="false"
+		operand=#decalsViewAccess(),
+		eq="false",
+		ne=#if(
+			operator=userGroupAccessForCollection.valueSet().has(has=#decalsModifyAccess()).toString(),
+			operand="true",
+			eq="true",
+			ne="false"
+		)
 	)
 );
 
@@ -701,7 +760,12 @@ userCollections=allCollectionObj.cforEach(
     op=#if(
     	operator=collectionHasUser,
 		operand="true",
-		eq=collectionObj
+		eq=collectionObj,
+		ne=#if(
+			operator=collectionHasMemberGroup,
+			operand="true",
+			eq=collectionObj
+		)
 	)
 );
 
@@ -2158,6 +2222,15 @@ deleteUserResources=allFileMdObj.cforEach(
 	)
 );
 
+deleteUserGroups=allGroupObj.cforEach(
+	paramName="groupId",
+    op=#if(
+    	operator=groupObj.cget(creator=""),
+		operand="@userId",
+		eq=deleteGroup
+	)
+);
+
 deleteUser=#idxDelete(userDb,key="@userId");
 
 deleteUserAndResources=#object(
@@ -2167,6 +2240,7 @@ deleteUserAndResources=#object(
 	d=deleteOldSession.ccall(userId=decalsPostData.cget(userId="")),
 	e=removeUserFromAllCollections.ccall(userId=decalsPostData.cget(userId="")),
 	f=removeUserFromAllGroups.ccall(userId=decalsPostData.cget(userId="")),
+	g=deleteUserGroups.ccall(userId=decalsPostData.cget(userId="")),
 	y=deleteUser.ccall(userId=decalsPostData.cget(userId="")),
 	z=#object(msg="true")
 ).cget(z="").displayJson();
@@ -2178,7 +2252,9 @@ deleteUserTransferResources=#object(
 	b=checkHasUserManagerPrivileges.ccall(userId=sessionUserId.ccall(sessionId=decalsPostData.cget(sessionId=""))),
 	c=transferAllResources.ccall(fromUserId=decalsPostData.cget(userId=""),toUserId=decalsPostData.cget(toUserId="")),
 	d=deleteOldSession.ccall(userId=decalsPostData.cget(userId="")),
-	e=removeUserFromAllCollections.ccall(userId=decalsPostData.cget(userId="")),
+	e=removeUserFromAllCollections.ccall(userId=decalsPostData.cget(userId="")),	
+	f=removeUserFromAllGroups.ccall(userId=decalsPostData.cget(userId="")),
+	g=deleteUserGroups.ccall(userId=decalsPostData.cget(userId="")),
 	y=deleteUser.ccall(userId=decalsPostData.cget(userId="")),
 	z=#object(msg="true")
 ).cget(z="").displayJson();
