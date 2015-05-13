@@ -51,7 +51,7 @@ structureDirectory = #string(str="competency/structure-files");
 // competency models
 //============================
 
-backupRestoreKeyPath = #string(str="/competencies/libCompetency.backupRestore.key");
+backupRestoreKeyPath = #string(str="/competency/competency.backupRestore.key");
 backupRestoreKeyPath = #error(msg="You need to set the Backup/Restore Keyfile Path");	// FIXME
 
 // Loads Key File and exposes the Key for verification
