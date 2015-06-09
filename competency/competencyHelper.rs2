@@ -172,9 +172,16 @@ checkUserUris = #if(operator=#decode(obj="@users").count(), operand="1",
 setup = #object(  
 	a_uri = #ontologySetUriPrefix(uri=#competencyDefaultURI()),
 	b_directory=#competencyDirectory(),
-	c_default=#competencyCreateDefaultModel(),
-	d=#decode(obj=checkUserUris),
-	e_guestUser=createGuestIfSet,
+	c_structures=#if(operator=#toArray(obj="@uris").has(has=#competencyStructureURI()), operand="true",
+						ne=#ontologyTDBLoader(
+									input=#competencyStructureDirectory(), 
+									extension=".owl", 
+									tdbDirectory=#competencyDirectory()
+								)
+					).ccall(uris=#ontologyListOntologies(directory=#competencyDirectory())),
+	d_default=#competencyCreateDefaultModel(),
+	e=#decode(obj=checkUserUris),
+	f_guestUser=createGuestIfSet,
 );      
     
 #competencySetupAutoExecute = setup;
