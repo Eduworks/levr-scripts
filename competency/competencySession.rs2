@@ -13,6 +13,10 @@ userDB = {
 	index = "0"
 };
 
+incrementCompetencySessionLength = #sessionUpdate(sessionDB, sessionId="@sessionId", expires=#date(addHours="1", _raw="true")).string(str="true");
+
+#competencyIncrementSessionLength = incrementCompetencySessionLength;
+
 checkSession = #if(operator=#sessionRead(sessionDB, sessionId="@sessionId").displayJson(_collapse="true"), operand=#add(a="{", b="}"), 
 						eq=#string(str="false"),
 						ne=#if(operator=#sessionRead(sessionDB, sessionId="@sessionId").get(expires=""), operand=#date(_raw="true"),
@@ -20,7 +24,7 @@ checkSession = #if(operator=#sessionRead(sessionDB, sessionId="@sessionId").disp
 										a=#sessionDelete(sessionDB, sessionId="@sessionId"),
 										b=#competencyThrowSessionExpired()
 									),
-								ge=#sessionUpdate(sessionDB, sessionId="@sessionId", expires=#date(addHours="1", _raw="true")).string(str="true")
+								ge=incrementCompetencySessionLength
 							)
 				);
 
@@ -69,7 +73,7 @@ checkLoginWithSession = #object(
 // sessionId:
 //==============
 getSessionUsername = #if(operator=checkSession, operand="true",
-							eq=#sessionRead(sessionDB, sessionId="@sessionId").get(userId=""),
+							eq=#sessionRead(sessionDB, sessionId="@sessionId").debug().get(userId=""),
 							ne=""
 						);
 						
