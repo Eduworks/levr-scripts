@@ -97,8 +97,8 @@ userModelName= #add(b="user-", c="@userId");
 // Competency Model Structure URIs
 //==============
 
-competencyStructureURI = #string(str="http://www.competency.services/structure-competency");
-userStructureURI = #string(str="http://www.competency.services/structure-user");
+competencyStructureURI = #string(str="http://www.staging.decals.eduworks.com/competencies/structure-competency");
+userStructureURI = #string(str="http://www.staging.decals.eduworks.com/competencies/structure-user");
  
 #competencyStructureURI = competencyStructureURI;
 #competencyUserStructureURI = userStructureURI;

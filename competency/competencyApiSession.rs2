@@ -47,7 +47,25 @@ API_Validate = #object(
 displayValidateAPI = API_Validate.displayJson(_collapse="true");
 /competency/session/validate/api = displayValidateAPI;
 
+//==============
+// Session User Info
+//==============
 
+userInfo = #competencySessionUserInfo(sessionId=postedSessionId).displayJson(_collapse="true");
+/competency/session/userInfo = userInfo;
+
+//-----API-------
+
+API_UserInfo = #object(
+	levr-service="#competencySessionUserInfo",
+	web-service="/competency/session/userInfo",
+	description="Validates that the sessionId given is not bad or expired and returns the session user's info if it is valid",
+	params=#object(
+				sessionId=""
+			)
+);
+displayUserInfoAPI = API_UserInfo.displayJson(_collapse="true");
+/competency/session/userInfo/api = displayUserInfoAPI;
 
 //==============
 // API for Manipulating Competency Session
@@ -59,6 +77,9 @@ API_Session = #object().putInObject(
 ).putInObject(
 	dest="/competency/session/validate",
 	item=API_Validate
+).putInObject(
+	dest="/competency/session/userInfo",
+	item=API_UserInfo
 );
 
 

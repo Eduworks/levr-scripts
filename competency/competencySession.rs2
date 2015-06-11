@@ -73,14 +73,33 @@ checkLoginWithSession = #object(
 // sessionId:
 //==============
 getSessionUsername = #if(operator=checkSession, operand="true",
-							eq=#sessionRead(sessionDB, sessionId="@sessionId").debug().get(userId=""),
+							eq=#sessionRead(sessionDB, sessionId="@sessionId").cget(userId=""),
 							ne=""
 						);
 						
 #competencySessionUser = getSessionUsername;
 
 //==============
-// Retrieve Session User
+// Retrieve Session User Info
+//--------------
+// #competencySessionUser
+//--------------
+// sessionId:
+//==============
+getSessionUserInfo = #if(operator=checkSession, operand="true",
+							eq=#sessionRead(
+									sessionDB, 
+									sessionId="@sessionId"
+								).cget(
+									userId=""
+								).toParameter(op=#competencyReadUser(currentUser=#competencySessionUser(sessionId="@sessionId")), paramName="userId")
+							ne=""
+						);
+						
+#competencySessionUserInfo = getSessionUserInfo;
+
+//==============
+// Validate if Session is Active
 //--------------
 // #competencySessionValidate
 //--------------
