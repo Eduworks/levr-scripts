@@ -239,11 +239,10 @@ prepStructureFiles = #add(a="[",b="]").toArray().append(
 													b="structure-user",
 												).cforEach(op=prepFile, paramName="fileName", threaded="false");  
 
-//#toArray(obj="@uris").has(has=#competencyStructureURI())
 setup = #object(  
 	a_uri = #ontologySetUriPrefix(uri=#competencyDefaultURI()),
 	b_directory=#competencyDirectory(),
-	c_structures=#if(operator="false", operand="true",
+	c_structures=#if(operator=#toArray(obj="@uris").has(has=#competencyStructureURI()), operand="true",
 						ne=#object(
 								a=prepStructureFiles,
 								b=#ontologyTDBLoader(
