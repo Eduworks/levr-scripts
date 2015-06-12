@@ -92,7 +92,10 @@ getSessionUserInfo = #if(operator=checkSession, operand="true",
 									sessionId="@sessionId"
 								).cget(
 									userId=""
-								).toParameter(op=#competencyReadUser(currentUser=#competencySessionUser(sessionId="@sessionId")), paramName="userId")
+								).toParameter(
+									op=#competencyReadUser(currentUser=#competencySessionUser(sessionId="@sessionId")), 
+									paramName="userId"
+								),
 							ne=""
 						);
 						

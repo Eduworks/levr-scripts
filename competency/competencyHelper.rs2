@@ -168,16 +168,90 @@ checkUri = #if(operator=#catch(try=#ontologyReadAllProperties(directory=#compete
 checkUserUris = #if(operator=#decode(obj="@users").count(), operand="1",
 					 ge=checkUri,
 					).ccall(users=#competencyGetUserIds()); 
-  
+ 
+cacheDb = {
+	indexDir = "./cache",
+	databaseName = "cache",
+	index = "0"
+};
+ 
+setCache = #if(operator=#idxGet(cacheDb, key="@cacheId"), operand="",
+				eq=#object().putInObject(
+									dest="@name",
+									item="@item"
+							),
+				ne=#idxGet(cacheDb, key="@cacheId").toObject().putInObject(
+																dest="@name",
+																item="@item"	
+															)
+			).idxSet(cacheDb, key="@cacheId", ttlAccessSeconds="60").toObject().getByParam(param="@name");
+
+#setCache = setCache;
+
+getCache = #idxGet(cacheDb, key="@cacheId").toObject().getByParam(param="@name");
+ 
+#getCache = getCache;
+ 
+prepFile = #object(
+				a=#setCache(
+						name="fileString", 
+						item=#fileLoad(
+									path=#add(a=#competencyStructureDirectory(), b="/", c="@fileName", d=".owl")
+								).fileToString()
+					),
+				b=#setCache(
+						name="start", 
+						item=#indexOf(
+								str=#getCache(name="fileString"), 
+								substr=#add(a="<!ENTITY ", b="@fileName")
+							).add(a="2", b=#string(str=#add(a="<!ENTITY ", b="@fileName"), op="length"))
+					),
+				c=#setCache(
+						name="end", 
+						item=#indexOf(
+								str=#string(op="substr", str=#getCache(name="fileString"), begin=#getCache(name="start")), 
+								substr="#"
+								).add(a=#add(a="-", b=#string(str="@fileName", op="length")))
+					),
+				d=#setCache(name="oldUri", item=#string(
+													op="substr", 
+													str=#getCache(name="fileString"), 
+													begin=#getCache(name="start"), 
+													end=#add(
+															a=#getCache(name="start").toDouble(), 
+															b=#getCache(name="end").toDouble()
+														)
+												)
+					),
+				e=#string(
+						str=#getCache(name="fileString"), 
+						op="replace", 
+						regex=#getCache(name="oldUri"), 
+						with=#competencyDefaultURI()
+					).fileSave(path=#add(a=#competencyStructureDirectory(), b="/", c="@fileName", d=".owl"))
+			).ccall(
+				cacheId=#generateUUID()
+			);
+			
+																					
+prepStructureFiles = #add(a="[",b="]").toArray().append(
+													a="structure-competency",
+													b="structure-user",
+												).cforEach(op=prepFile, paramName="fileName", threaded="false");  
+
+//#toArray(obj="@uris").has(has=#competencyStructureURI())
 setup = #object(  
 	a_uri = #ontologySetUriPrefix(uri=#competencyDefaultURI()),
 	b_directory=#competencyDirectory(),
-	c_structures=#if(operator=#toArray(obj="@uris").has(has=#competencyStructureURI()), operand="true",
-						ne=#ontologyTDBLoader(
+	c_structures=#if(operator="false", operand="true",
+						ne=#object(
+								a=prepStructureFiles,
+								b=#ontologyTDBLoader(
 									input=#competencyStructureDirectory(), 
 									extension=".owl", 
 									tdbDirectory=#competencyDirectory()
 								)
+							)
 					).ccall(uris=#ontologyListOntologies(directory=#competencyDirectory())),
 	d_default=#competencyCreateDefaultModel(),
 	e=#decode(obj=checkUserUris),
