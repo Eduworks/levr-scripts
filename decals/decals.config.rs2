@@ -7,7 +7,10 @@ fileDownloadUrlPrefix  = #string(str="http://127.0.0.1:9722/api/custom/decalsFil
 // Access Keys
 //============================
 lrSearchApiKey = #string(str="<LR SEARCH API KEY>");
+lrSearchApiKey = #error(msg="Need to Set the LR Search API Key");			// FIXME
+
 mashapeKey = #string(str="<MASHAPE KEY>");
+mashapeKey = #error(msg="Need to set the MashapeKey");       				// FIXME
 
 //============================
 // SOLR Configs

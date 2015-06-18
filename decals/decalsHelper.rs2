@@ -1,0 +1,170 @@
+
+decalsPostData=#getMultipartPostData(field="decalsData").toObject();
+postDataText=decalsPostData.cget(text="");
+
+userDb={
+	indexDir=#decalsUserDbDirectory(),
+	databaseName=#decalsUserDbName(),
+	index=#decalsUserDbIndexName() 
+};
+
+fileMdObj = #decalsFileMdObj();
+
+//============================
+//Grade Level
+//============================
+
+//--------------------------
+//Normalize grade level into something DECALS recognizes
+
+gradeLevel=fileMdObj.cget(gradeLevel_t="");
+
+normalizeGradeLevel=#if(
+	operator=gradeLevel,
+	operand="",
+	eq="",
+	ne=#if(
+		operator=gradeLevel,
+		operand="5",
+		lt="ES",
+		gt=#if(
+			operator=gradeLevel,
+			operand="9",
+			lt="MS",
+			gt=#if(
+				operator=gradeLevel,
+				operand="13",
+				lt="HS",
+				gt="HE"
+			)
+		)
+	)
+).ccall(fileId="@fileId");
+#decalsNormalizeGradeLevel = normalizeGradeLevel;
+
+normalizeGradeLevelDj=normalizeGradeLevel.displayJson();
+
+/decalsNormalizeGradeLevel=normalizeGradeLevelDj;
+
+
+//============================
+//Nouns
+
+getTextNouns=#httpPost(
+        obj=postDataText,
+        contentType="text/plain",
+        multipart="false",
+        X-Mashape-Key=#decalsMashapeKey(),
+        url=#decalsTextNounsServiceUrl()
+);
+
+getTextNounsDisplay=getTextNouns.displayJson();
+
+/decalsGetTextNouns=getTextNounsDisplay;
+
+//============================
+//Text Highlights
+
+getTextKeywords=#httpPost(
+        obj=postDataText,
+        contentType="text/plain",
+        multipart="false",
+        X-Mashape-Key=#decalsMashapeKey(),
+        url=#decalsTextKeywordsServiceUrl()
+);
+
+getTextKeywordsDisplay=getTextKeywords.displayJson();
+
+/decalsGetTextKeywords=getTextKeywordsDisplay;
+
+getTextHighlights=#object(
+    text=postDataText,
+	nouns=getTextNouns.valueSet().cgetIndex(index="0"),
+	keywords=getTextKeywords.valueSet().cgetIndex(index="0")
+).displayJson();
+
+/decalsGetTextHighlights=getTextHighlights;
+
+//============================
+//Word Definition
+
+getWordDefinition=#httpPost(
+        obj=decalsPostData.cget(word=""),
+        contentType="text/plain",
+        multipart="false",
+        X-Mashape-Key=#decalsMashapeKey(),
+        url=#decalsWordDefineServiceUrl()
+);
+
+
+getWordDefinitionDisplay=getWordDefinition.valueSet().cgetIndex(index="0").displayJson();
+
+/decalsDefineWord=getWordDefinitionDisplay;
+
+
+//============================
+//Wiki Info
+getWikiInfo=#httpPost(
+        obj=decalsPostData.cget(title=""),
+        contentType="text/plain",
+        multipart="false",
+        X-Mashape-Key=#decalsMashapeKey(),
+        url=#decalsWikiInfoServiceUrl()
+);
+
+getWikiInfoDisplay=getWikiInfo.valueSet().cgetIndex(index="0").displayJson();
+
+/decalsWikiInfo=getWikiInfoDisplay;
+
+
+
+//============================
+//Application settings
+//============================
+
+//--------------------------
+//Get application settings
+
+appSettings=#object(
+	a=checkSession.ccall(sessionId=decalsPostData.cget(sessionId="")),
+    b=#object(
+    	fileDownloadUrl=#decalsFileDownloadUrlPrefix(),
+    	lrPublishNode=#decalsLrPublishNode(),
+    	lrPublishSubmitter=#decalsLrPublishSubmitter(),
+    	lrPublishCurator=#decalsLrPublishCurator(),
+    	lrPublishFromNode=#decalsLrPublishFromNode(),
+    	lrPublishParadataActor=#decalsLrPublishParadataActor()
+    )   
+).cget(b="").displayJson();
+                  
+/decalsAppSettings = appSettings;
+
+
+//--------------------------
+// Initial user
+//
+//Should be run once and deleted.  
+//Change values as appropriate
+//--------------------------
+
+initialAdminPassword=#add(a="<INITIAL ADMIN PASSWORD>");
+
+putInitialUserInDb=#object(
+	password=#bCryptHash(
+		password=initialAdminPassword,
+		rounds="10"
+	),
+	dateCreated=#date(_raw="true"),	
+	datePasswordUpdated=#date(_raw="true"),
+	firstName="DECALS",
+	lastName="Admin",
+	email="@userId",
+	roles=#listAdd(a=#decalsAdminRoleId())
+).idxSet(userDb,key="@userId");
+
+createFirstAdminUser=#object(
+	a=putInitialUserInDb,
+	b=#idxGet(userDb,key="@userId")
+).ccall(userId="decalsadmin@decals.com").cget(a="").displayJson();
+ 
+/decalsInitAdminUser=createFirstAdminUser;

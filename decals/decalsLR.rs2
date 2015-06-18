@@ -1,0 +1,224 @@
+decalsPostData=#getMultipartPostData(field="decalsData").toObject();
+lrPublishPostdata = #getMultipartPostData(field="lrData").toObject();
+
+fileMdObj = #decalsFileMdObj();
+
+fileMetadataDb={
+	indexDir=#decalsFileMetadataDbDirectory(),
+	databaseName=#decalsFileMetadataDbName(),
+	index=#decalsFileMetadataDbIndexName() 
+};
+
+//============================
+//Learning Registry
+//============================
+
+//--------------------------
+//Publish 
+// This should do all publish type activities (publish metadata and paradata and delete metadata and paradata depending on the lrPublishPostdata)
+// Probably add a paradata section also so it can be batched without using lrPublishPostdata.
+
+publishToLr=#object(documents=#listAdd(item=#toObject(obj=lrPublishPostdata))).httpPost(
+	url=#add(a=#decalsLrPublishNode(),b="publish"),
+	contentType="application/json;charset=UTF-8",
+	name="something",
+	multipart="false",
+	authToken=#decalsLrPublishToken()
+);
+
+lrPublish=#object(
+    a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+    b=publishToLr
+).cget(b="").displayJson();
+
+/decalsPublishToLr = lrPublish;
+
+//--------------------------
+//Post LR publish
+
+lrSolrObj=#object(
+	url_status="200",
+	description=fileMdObj.cget(description_t=""),
+	source="DECALS Application",
+	flrHarvestDate=#date(dateFormat="yyyy-MM-dd'T'HH:mm:ss'Z'"),
+	title=#listAdd(a=fileMdObj.cget(title_t="")),
+	url=fileMdObj.cget(url_t=""),
+	grade_levels=#listAdd(a=#decalsNormalizeGradeLevel()),
+	keywords=fileMdObj.cget(keywords_txt=""),
+	flrId=fileMdObj.cget(lrDocId_t=""),
+	publisher=fileMdObj.cget(publisher_t=""),
+	id=fileMdObj.cget(url_t=""),
+	create_date=#date(inputMillis=fileMdObj.cget(lrPublishDate_l=""),dateFormat="yyyy-MM-dd'T'HH:mm:ss'Z'"),
+	last_modified=#date(inputMillis=fileMdObj.cget(lrPublishDate_l=""),dateFormat="yyyy-MM-dd'T'HH:mm:ss'Z'"),
+	decalsUser_t=fileMdObj.cget(uploadedBy_t="")
+);
+
+updateResourceLrPublishData=#fileUpdateMetadataField(
+	fileMetadataDb,
+	fileId="@fileId",
+	lrDocId_t=decalsPostData.cget(lrDocId=""),
+	lrPublishDate_l=#date(_raw="true")
+);
+
+updateResourceLrInfo=#object(
+	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
+	b=updateResourceLrPublishData.ccall(fileId="@fileId"),
+	c=#solrAddDocs(
+    	url=#decalsDarSolrUrl(),
+        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")
+    ),
+    d=#solrAddDocs(
+    	url=#decalsRegistrySolrUrl(),
+        documents=lrSolrObj
+    ),
+	z=#object(msg="true")
+).ccall(
+	fileId=decalsPostData.cget(fileId="")
+).cget(z="").displayJson();
+
+/decalsUpdateResourceLrData = updateResourceLrInfo;
+
+
+//============================
+//Basic Search
+
+performBasicSearch=#httpPost(
+        obj="",
+        contentType="text/plain",
+        multipart="false",
+        X-Api-Key=#decalsLrSearchApiKey(),
+        url=#add(a=#decalsBasicLrSearchUrl(),
+                 b="?q=",
+        		 d=decalsPostData.cget(searchTerm=""),
+        		 d="&limit=",
+        		 e=decalsPostData.cget(itemsPerPage=""),
+        		 f="&page=",
+        		 g=decalsPostData.cget(page="")
+       	)
+).displayJson();
+
+/decalsBasicSearch=performBasicSearch;
+
+//============================
+//SOLR Search for learning registry entries
+
+solrRegistryQuery=#solrQuery(
+	url=#decalsRegistrySolrUrl(),
+    sq=decalsPostData.cget(query=""),
+    rows=decalsPostData.cget(rows=""),
+    returnFields=#toArray(obj=decalsPostData.cget(returnFields="")),
+    idSort=decalsPostData.cget(idSort=""),
+    useCursor=decalsPostData.cget(useCursor=""),  
+    useMustMatchAll=decalsPostData.cget(useMustMatchAll=""),
+    start=decalsPostData.cget(start="")
+).displayJson();
+
+/decalsSolrRegistryQuery=solrRegistryQuery;
+
+//============================
+//SOLR query counts for learning registry entries
+
+solrRegistryQueryTermsSearch=#solrQuery(
+	url=#decalsRegistrySolrUrl(),
+    sq="@searchTerm",
+    rows="0",
+    idSort="false",
+    useCursor="false",
+    useMustMatchAll="@useMustMatchAll"
+).cget(total="");
+
+searchTerms=#toArray(obj=decalsPostData.cget(terms=""));
+
+solrRegistryQueryTerms=searchTerms.cforEach(threaded="true",paramName="val",op=solrRegistryQueryTermsSearch.ccall(searchTerm="@val",useMustMatchAll=decalsPostData.cget(useMustMatchAll="")));
+
+solrRegistryQueryCounts=#object(
+	a=solrRegistryQueryTerms
+).cget(a="").displayJson();
+
+/decalsSolrRegistryQueryCounts=solrRegistryQueryCounts;
+
+
+//============================
+//SOLR query counts for learning registry entries
+
+getQueryTermStatement = #add(
+							a="(",
+							b=#split(obj=decalsPostData.cget(query=""), split=" ").flatten(_delimiter=" OR "),
+							c=")"
+						);
+
+createMimeTypeString = #add(
+							a=" AND mimetype_t:(",
+							b=#add(
+								a="[",
+								b=#toArray(decode="@resourceTypes").cforEach(op=getResourceMimeTypes, paramName="resourceType", array="true").flatten(_delimter=","),
+								c="]"
+							).toArray().flatten(_delimiter=" OR "),
+							c=")"
+						);
+
+mimeTypeStatement = #if(operator=#decode(obj="@ignorePrefs").has(has="mimetype_t"), operand="true",
+							ne=#if(operator=#toArray(obj="@resourceTypes").count(), operand="0",
+									gt=createMimeTypeString
+								)
+						).ccall(
+							resourceTypes=#decode(obj="@userPrefs").cget(resourceTypes="")
+						);
+
+createGradeLevelString = #add(
+							a=" AND grade_levels:(",
+							b=#toArray(obj="@gradeLevels").flatten(_delimiter=" OR "),
+							c=")"
+						);
+
+gradeLevelStatement = #if(operator=#decode(obj="@ignorePrefs").has(has="grade_levels"), operand="true",
+							ne=#if(operator=#toArray(obj="@gradeLevels").count(), operand="0",
+									gt=createGradeLevelString
+								),
+							eq=#if(operator=decalsPostData.cget(appliedGradeLevels=""), operand="",
+									ne=decalsPostData.cget(appliedGradeLevels="")
+								)
+						).ccall(
+							gradeLevels=#decode(obj="@userPrefs").cget(gradeLevel="")
+						);
+
+createLanguageString = #add(
+							a=" AND language_t:(",
+							b=#toArray(obj="@languages").flatten(_delimiter=" OR "),
+							c=")"
+						);
+
+languageStatement = #if(operator=#decode(obj="@ignorePrefs").has(has="language_t"), operand="true",
+							ne=#if(operator=#toArray(obj="@languages").count(), operand="0",
+									gt=createLanguageString
+								)
+						).ccall(
+							languages=#decode(obj="@userPrefs").cget(language="")
+						);
+
+buildLearningPrefQuery = #add(
+							a="*:", 
+							b=getQueryTermStatement, 
+							c=gradeLevelStatement,
+							d=languageStatement
+						).ccall(
+							userPrefs=#decalsGetUserPreferences(),
+							ignorePrefs=decalsPostData.cget(ignorePrefs="").debug()
+						);
+						
+displayQueryTermStatement = buildLearningPrefQuery.displayJson(_collapse="true");
+/test/splitQuery = displayQueryTermStatement;
+
+solrRegistryQueryLearningPrefs = #solrQuery(
+	url=#decalsRegistrySolrUrl(),
+	sq=buildLearningPrefQuery.debug(),
+	rows=decalsPostData.cget(rows=""),
+	returnFields=#toArray(obj=decalsPostData.cget(returnFields="")),
+    idSort=decalsPostData.cget(idSort=""),
+    useCursor=decalsPostData.cget(useCursor=""),  
+    useMustMatchAll=decalsPostData.cget(useMustMatchAll=""),
+    start=decalsPostData.cget(start="")
+).displayJson();
+
+
+/decalsLearnerProfileQuery = solrRegistryQueryLearningPrefs;
