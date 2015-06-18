@@ -10,7 +10,7 @@ lrSearchApiKey = #string(str="<LR SEARCH API KEY>");
 lrSearchApiKey = #error(msg="Need to Set the LR Search API Key");			// FIXME
 
 mashapeKey = #string(str="<MASHAPE KEY>");
-mashapeKey = #error(msg="Need to set the MashapeKey");       				// FIXME
+mashapeKey = #error(msg="Need to set the MashapeKey");						// FIXME
 
 //============================
 // SOLR Configs
@@ -85,6 +85,9 @@ fullRatingDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=ratingDbDire
 paraTrackDbDirectoryName = #string(str="dbParadataTracking");
 fullParaTrackDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=paraTrackDbDirectoryName);
 
+paradataDbDirectoryName = #string(str="dbParadataCounts");
+fullParadataDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=paradatakDbDirectoryName);
+
 commentDbDirectoryName = #string(str="dbComments");
 fullCommentDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=commentDbDirectoryName);
 
@@ -111,8 +114,10 @@ fullGroupDbDirectory = #add(a=defaultDirectory,b=rootDbDirectory,c=groupDbDirect
 tempDbName = #string(str="temps");
 ratingDbName = #string(str="ratings");
 paraTrackDbName = #string(str="paraTrackings");
+paradataDbName = #string(str="paradata");
 commentDbName = #string(str="comments");
 userDbName = #string(str="users");
+learningObjectiveDbName = #string(str="learningObjectives");
 sessionDbName = #string(str="sessions");
 fileDbName = #string(str="files");
 fileMetadataDbName = #string(str="fileMetadatas");
@@ -128,8 +133,10 @@ groupDbName = #string(str="groups");
 tempDbIndex = #string(str="temp");
 ratingDbIndex = #string(str="rating");
 paraTrackDbIndex = #string(str="paraTrack");
+paradataDbIndex = #string(str="paradata");
 commentDbIndex = #string(str="comment");
 userDbIndex = #string(str="user");
+learningObjectiveDbIndex = #string(str="learningObjectives");
 sessionDbIndex = #string(str="session");
 fileDbIndex = #string(str="file");
 fileMetadataDbIndex = #string(str="fileMetadata");
@@ -162,6 +169,8 @@ groupDbIndex = #string(str="group");
 #decalsDarSolrUrl = darSolrUrl;
 #decalsRegistrySolrUrl = registrySolrUrl;
 
+#decalsBaseDirectoryName = defaultDirectory;
+
 #decalsTempDbDirectory = fullTempDbDirectory;
 #decalsTempDbName = tempDbName;
 #decalsTempDbIndexName = tempDbIndex;
@@ -178,6 +187,10 @@ groupDbIndex = #string(str="group");
 #decalsParaTrackDbName = paraTrackDbName;
 #decalsParaTrackDbIndexName = paraTrackDbIndex;
 
+#decalsParadataDbDirectory = fullParadataDbDirectory;
+#decalsParadataDbName = paradataDbName;
+#decalsParadataDbIndexName = paradataDbIndex;
+  
 #decalsCommentDbDirectory = fullCommentDbDirectory;
 #decalsCommentDbName = commentDbName;
 #decalsCommentDbIndexName = commentDbIndex;
@@ -185,6 +198,9 @@ groupDbIndex = #string(str="group");
 #decalsUserDbDirectory = fullUserDbDirectory;
 #decalsUserDbName = userDbName;
 #decalsUserDbIndexName = userDbIndex;
+
+#decalsLearningObjectiveDbName = learningObjectiveDbName;
+#decalsLearningObjectiveDbIndexName = learningObjectiveDbIndex;
 
 #decalsSessionDbDirectory = fullSessionDbDirectory;
 #decalsSessionDbName = sessionDbName;
