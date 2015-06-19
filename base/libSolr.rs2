@@ -51,6 +51,7 @@ clearIndex=#object(
 query=#solrSearch(
 	solrURL="@url",
 	query="@sq",
+	bq="@boostQuery",
 	fields=#toArray(obj="@fields"),
 	sort=#toArray(obj="@sort"),
 	rows="@rows",
