@@ -112,7 +112,7 @@ readMyUser = #userGet(
 					userId="@userId"
 				).remove(
 					password="",
-					sessionId=""
+					sessionId="",
 				);
 
 readUser = #if(operator="@currentUser", operand="@userId",
@@ -229,7 +229,7 @@ userDeleteParams = {
 };
   
 deleteUserFromDB = #catch( 
-	try=#userDelete(userDB, userId="@userId", password="@password"), 
+	try=#userDelete(userDB, userId="@userId"), 
 	null=msgWrongPassword
 );
 deleteOnt = #ontologyDelete(userDeleteParams);
@@ -244,7 +244,6 @@ deleteUser = #if(
 checkDeleteUser = #object(
 	a=#competencyErrorUserIdSet(),
 	b=#competencyErrorUserExists(),
-	c=#competencyErrorPasswordSet(),
 	d=#if(operator="@currentUser", operand="@userId",
 				ne=msgOtherUser
 		),
