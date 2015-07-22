@@ -9,6 +9,15 @@ fileMetadataDb={
 	index=#decalsFileMetadataDbIndexName() 
 };
 
+
+mimeTypeBoost = #string(str="8");
+
+learningObjectiveTitleBoost = #string(str="6");
+learningObjectiveDescriptionBoost = #string(str="5");
+
+competencyTitleBoost = #string(str="2");
+competencyDescriptionBoost = #string(str="2");
+
 //============================
 //Learning Registry
 //============================
@@ -47,17 +56,29 @@ lrSolrObj=#object(
 	keywords=fileMdObj.cget(keywords_txt=""),
 	flrId=fileMdObj.cget(lrDocId_t=""),
 	publisher=fileMdObj.cget(publisher_t=""),
-	id=fileMdObj.cget(url_t=""),
+	id=#if(operator="@existingUrl", operand="true",
+			eq=#add(a=fileMdObj.cget(url_t=""), b="#lr-copy-", c=#generateUUID()),
+			ne=fileMdObj.cget(url_t="")
+		),
 	create_date=#date(inputMillis=fileMdObj.cget(lrPublishDate_l=""),dateFormat="yyyy-MM-dd'T'HH:mm:ss'Z'"),
 	last_modified=#date(inputMillis=fileMdObj.cget(lrPublishDate_l=""),dateFormat="yyyy-MM-dd'T'HH:mm:ss'Z'"),
-	decalsUser_t=fileMdObj.cget(uploadedBy_t="")
+	decalsUser_t=fileMdObj.cget(uploadedBy_t=""),
+	mimetype_t=#if(operator=fileMdObj.cget(mimeType_t=""), operand="",
+				ne=fileMdObj.cget(mimeType_t=""),
+				eq=#getFileFromUrl(url=fileMdObj.cget(url_t="")).mimeType(),
+			),
+	language_t=#if(operator=fileMdObj.cget(language_t=""), operand="",
+				ne=fileMdObj.cget(mimeType_t=""),
+				eq=#fileLoad(path="@file").fileToString().textLanguage()
+			).ccall(file=#getFileFromUrl(url=fileMdObj.cget(url_t="")).toArray().getIndex(index="0")),
 );
 
 updateResourceLrPublishData=#fileUpdateMetadataField(
 	fileMetadataDb,
 	fileId="@fileId",
 	lrDocId_t=decalsPostData.cget(lrDocId=""),
-	lrPublishDate_l=#date(_raw="true")
+	lrPublishDate_l=#date(_raw="true"),
+	published_t="true"
 );
 
 updateResourceLrInfo=#object(
@@ -73,7 +94,21 @@ updateResourceLrInfo=#object(
     ),
 	z=#object(msg="true")
 ).ccall(
-	fileId=decalsPostData.cget(fileId="")
+	fileId=decalsPostData.cget(fileId=""),
+	existingUrl=#if(operator="@count", operand="0",
+    					eq="false",
+    					ne="true"
+    				).ccall(
+    					count=#solrQuery(
+									url=#decalsRegistrySolrUrl(),
+							    	sq=#add(a="id:",b=fileMdObj.cget(url_t="")),
+							    	rows="10",
+							    	idSort="true",
+							    	useCursor="true",  
+							    	useMustMatchAll="true",
+							    	start="0",
+							    ).toObject().cget(total=""),
+					)
 ).cget(z="").displayJson();
 
 /decalsUpdateResourceLrData = updateResourceLrInfo;
@@ -114,7 +149,7 @@ solrRegistryQuery=#solrQuery(
 ).displayJson();
 
 /decalsSolrRegistryQuery=solrRegistryQuery;
-
+ 
 //============================
 //SOLR query counts for learning registry entries
 
@@ -129,11 +164,12 @@ solrRegistryQueryTermsSearch=#solrQuery(
 
 searchTerms=#toArray(obj=decalsPostData.cget(terms=""));
 
-solrRegistryQueryTerms=searchTerms.cforEach(threaded="true",paramName="val",op=solrRegistryQueryTermsSearch.ccall(searchTerm="@val",useMustMatchAll=decalsPostData.cget(useMustMatchAll="")));
+solrRegistryQueryTerms=searchTerms.cforEach(threaded="true",paramName="val",op=solrRegistryQueryTermsSearch.ccall(searchTerm="@val",useMustMatchAll=#catch(try=decalsPostData.cget(useMustMatchAll=""), any="true")));
 
 solrRegistryQueryCounts=#object(
 	a=solrRegistryQueryTerms
 ).cget(a="").displayJson();
+
 
 /decalsSolrRegistryQueryCounts=solrRegistryQueryCounts;
 
@@ -153,7 +189,7 @@ createMimeTypeString = #add(
 								a="[",
 								b=#toArray(decode="@resourceTypes").cforEach(op=getResourceMimeTypes, paramName="resourceType", array="true").flatten(_delimter=","),
 								c="]"
-							).toArray().flatten(_delimiter=" OR "),
+							).toArray().removeFromArray(item=" ").removeFromArray(item="").flatten(_delimiter=" OR "),
 							c=")"
 						);
 
@@ -167,7 +203,7 @@ mimeTypeStatement = #if(operator=#decode(obj="@ignorePrefs").has(has="mimetype_t
 
 createGradeLevelString = #add(
 							a=" AND grade_levels:(",
-							b=#toArray(obj="@gradeLevels").flatten(_delimiter=" OR "),
+							b=#toArray(obj="@gradeLevels").removeFromArray(item=" ").flatten(_delimiter=" OR "),
 							c=")"
 						);
 
@@ -201,24 +237,228 @@ buildLearningPrefQuery = #add(
 							b=getQueryTermStatement, 
 							c=gradeLevelStatement,
 							d=languageStatement
-						).ccall(
-							userPrefs=#decalsGetUserPreferences(),
-							ignorePrefs=decalsPostData.cget(ignorePrefs="").debug()
 						);
 						
 displayQueryTermStatement = buildLearningPrefQuery.displayJson(_collapse="true");
 /test/splitQuery = displayQueryTermStatement;
 
+getResourceMapStatements = #decalsResourceMimeTypes().getByParam(param="@resourceType").flatten(_delimiter=" OR ");
+
+createMimeTypeStatement = #add(
+								a="mimetype_t:(",
+								b=#toArray(obj="@resourceTypes").cforEach(op=getResourceMapStatements, paramName="resourceType", array="true").flatten(_delimiter=" OR "),													
+								c=")^",
+								d=mimeTypeBoost
+							); 
+
+mimeTypeStatement = #if(operator=#decode(obj="@ignorePrefs").has(has="mimetype_t"), operand="true",
+						ne=#if(operator=#toArray(obj="@resourceTypes").count(), operand="0",
+								gt=createMimeTypeStatement,
+								eq=""
+							),
+						eq=""
+					);
+
+
+getVerbs = #httpPost(
+				obj="@learningObjective",
+				contentType="text/plain",
+		        multipart="false",
+		        X-Mashape-Key=#decalsMashapeKey(),
+		        url=""
+		   ).valueSet().getIndex(index="0");
+getVerbs = #toArray(obj=#add(a="[",b="]"));
+
+
+
+
+compareWords = #if(operator=#decode(obj="@comparison").cget(wordsInBLooselyRelatedToWordsInA=""), operand="3",
+					gt="@word",
+					eq="false"
+				).ccall(
+					comparison=#complextWordCompare(a="@word", b=decalsPostData.cget(query=""))
+				);
+					
+getWordForm = compareWords.ccall(
+				word=#decode(obj="@related").cget(wordForm="")
+			);
+
+getRelated = #if(operator=#toObject(obj="@definition").cget(relatedWords="").count(), operand="0",
+					gt=#toObject(obj="@definition").cget(relatedWords="").cforEach(
+																			op=getWordForm, 
+																			paramName="related", 
+																			array="true"
+																		),
+					eq="false"
+				);
+				
+getDefinitionRelated = #toArray(obj="@definitionArray").cforEach(
+															op=getRelated, 
+															paramName="definition", 
+															array="true"
+														).union().removeFromArray(
+															item="false"
+														).flatten(_delimiter=",").split(split=",").debug();
+
+
+checkSameAsQuery = #if(operator=#split(obj=decalsPostData.cget(query=""), split=" ").has(has="@noun"), operand="true",
+						eq="false",
+						ne="@noun"
+					);
+
+getSimilarWords = #httpPost(
+				        obj="@noun",
+				        contentType="text/plain",
+				        multipart="false",
+				        X-Mashape-Key=#decalsMashapeKey(),
+				        url=#decalsWordDefineServiceUrl()
+					).toObject().cget(a="");
+
+getNouns=#httpPost(
+		        obj="@fullString",
+		        contentType="text/plain",
+		        multipart="false",
+		        X-Mashape-Key=#decalsMashapeKey(),
+		        url=#decalsTextNounsServiceUrl()
+			).valueSet().getIndex(index="0");
+
+
+getNounsVerbsAndSimilar = #union(
+							obj=#toArray(obj="@nouns"),
+							related=#toArray(obj="@nouns").cforEach(
+																op=getSimilarWords, 
+																paramName="noun", 
+																array="true"
+															).cforEach(
+																op=getDefinitionRelated, 
+																paramName="definitionArray", 
+																array="true"
+															).union().removeFromArray(
+																item="false"
+															).cforEach(
+																op=checkSameAsQuery, 
+																paramName="noun", 
+																array="true"
+															).removeFromArray(item="false").flatten(_delimiter=",").split(split=","),
+							verbs=getVerbs,
+					).ccall(
+							nouns=getNouns.cforEach(op=checkSameAsQuery, paramName="noun", array="true").removeFromArray(item="false")
+					);
+
+createLearningObjectiveStatement = #if(operator="@searchString", operand="",
+										eq="",
+										ne=#add(
+												a="title:(",
+												b="@searchString",
+												c=")^",
+												d=learningObjectiveTitleBoost,
+												e=" AND description:(",
+												f="@searchString",
+												g=")^",
+												h=learningObjectiveDescriptionBoost
+											), 
+									).ccall(
+										searchString=#toArray(obj="@learningObjectives").cforEach(
+																							op=getNounsVerbsAndSimilar, 
+																							paramName="fullString", 
+																							array="true"
+																						).flatten(_delimiter=",").split(split=",").flatten(_delimiter=" OR ")
+									);
+
+learningObjectiveStatement = #if(operator=#toArray(obj="@learningObjectives").count(), operand="0",
+									gt=createLearningObjectiveStatement,
+									eq=""
+								);
+
+getTitleAndDescription = #add(
+							a=#decode(obj="@competencyDetails").getByParam(param=":competencyTitle").getIndex(index="0"),
+							b=" ",
+							c=#decode(obj="@competencyDetails").getByParam(param=":comeptencyDescription").getIndex(index="0")
+						).ccall(
+							competencyDetails=#decode(obj="@competencyObj").cget(competencyDetails="")
+						);
+
+createCompetencyStatement = #if(operator="@searchString", operand="",
+							eq="",
+							ne=#add(
+									a="title:(",
+									b="@searchString",
+									c=")^",
+									d=competencyTitleBoost,
+									e=" AND description:(",
+									f="@searchString",
+									g=")^",
+									h=competencyDescriptionBoost
+								),
+						).ccall(
+							searchString=#decode(obj="@desiredCompetencies").cforEach(
+																				op=getTitleAndDescription,
+																				paramName="competencyId",
+																				valueName="competencyObj",
+																				array="true"
+																			).cforEach(
+																				op=getNounsVerbsAndSimilar,
+																				paramName="fullString",
+																				array="true"
+																			).flatten(_delimiter=",").split(split=",").flatten(_delimiter=" OR ")
+						); 
+
+competencyStatement = #if(operator=#decode(obj="@desiredCompetencies").valueSet().count(), operand="0",
+							gt=createCompetencyStatement,
+							eq="",
+						).ccall(
+							desiredCompetencies=#decode(obj="@competencies").cget(desired="")
+						);
+
+buildAndConnectStatements = #add(
+								a="",
+								b="@mimeTypeStatement",
+								c=#if(operator="@mimeTypeStatement", operand="",
+										ne=#if(operator="@learningObjectiveStatement", operand="",
+												ne=" AND "
+											)
+									),
+								d="@learningObjectiveStatement",
+							).ccall(
+								mimeTypeStatement=mimeTypeStatement,
+								learningObjectiveStatement=learningObjectiveStatement,
+							);
+				
+//		competencyStatement=competencyStatement				
+//									e=#if(operator="@learningObjectiveStatement", operand="",
+//										ne=#if(operator="@competencyStatement", operand="",
+//												ne=" AND ",
+//												eq=""
+//											),
+//										eq=#if(operator="@mimeTypeStatement", operand="",
+//												ne=#if(operator="@competencyStatement", operand="",
+//														ne=" AND ",
+//														eq=""
+//													),
+//												eq=""
+//											)
+//									),
+//								f="@competencyStatement"				
+				
+buildBoostQuery=buildAndConnectStatements.ccall(
+					learningObjectives=#decode(obj="@userPrefs").cget(learningObjectives=""),
+					resourceTypes=#decode(obj="@userPrefs").cget(resourceTypes=""),
+					competencies=#decalsHeldVsDesiredCompetencies(userId=#decalsRetrieveSessionMetadata(sessionId=decalsPostData.cget(sessionId="")).cget(userId=""))
+				);
+
 solrRegistryQueryLearningPrefs = #solrQuery(
 	url=#decalsRegistrySolrUrl(),
 	sq=buildLearningPrefQuery.debug(),
+	boostQuery=buildBoostQuery.debug(),
 	rows=decalsPostData.cget(rows=""),
 	returnFields=#toArray(obj=decalsPostData.cget(returnFields="")),
     idSort=decalsPostData.cget(idSort=""),
     useCursor=decalsPostData.cget(useCursor=""),  
     useMustMatchAll=decalsPostData.cget(useMustMatchAll=""),
     start=decalsPostData.cget(start="")
+).ccall(
+	userPrefs=#decalsGetUserPreferences(),
+	ignorePrefs=decalsPostData.cget(ignorePrefs="")
 ).displayJson();
-
 
 /decalsLearnerProfileQuery = solrRegistryQueryLearningPrefs;

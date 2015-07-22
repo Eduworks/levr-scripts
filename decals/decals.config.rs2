@@ -1,4 +1,9 @@
 //============================
+// Admin User Password
+//============================
+initialAdminPassword=#add(a="TestTest2");
+
+//============================
 // File Download config
 //============================
 fileDownloadUrlPrefix  = #string(str="http://127.0.0.1:9722/api/custom/decalsFileDownload?fileId=");
@@ -146,6 +151,8 @@ groupDbIndex = #string(str="group");
 //============================
 // LEVR Service Calls exposing the config settings
 //============================
+
+#decalsInitialAdminPassword = initialAdminPassword;
 
 #decalsLrSearchApiKey = lrSearchApiKey;
 #decalsMashapeKey = mashapeKey;

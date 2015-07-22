@@ -44,6 +44,14 @@ getCompetencyDetails = #decode(obj="@recordObj").putInObject(
 														)
 												).ccall(
 													modelId=#decode(obj="@recordObj").getByParam(param=":recordCompetencyModel").getIndex(index="0")
+												).putInObject(
+													dest="modelDetails",
+													item=#competencyReadModel(
+																	modelId="@modelId", 
+																	currentUser=#competencySessionUser(sessionId=decalsPostData.cget(competencySessionId=""))
+														)
+												).ccall(
+													modelId=#decode(obj="@recordObj").getByParam(param=":recordCompetencyModel").getIndex(index="0")
 												);
 
 getRecords = #competencyReadAllRecords(userId="@userId", currentUser=#competencySessionUser(sessionId="@competencySessionId"));
@@ -62,6 +70,56 @@ getUserCompetencies = getRecords.ccall(
 webGetUserCompetencies = getUserCompetencies.displayJson(_collapse="true");
 
 /decalsUserCompetencies = webGetUserCompetencies;
+
+findLowestLevel = #if(operator="@levelRank", operand=#getCache(name="lowestRank"),
+						lt=#object(
+								a=#setCache(name="lowestRank", item="@levelRank"),
+								b=#setCache(name="lowestLevel", item="@levelId"),
+							)
+					).ccall(
+						levelRank=#decode(obj="@levelObj").getByParam(param=":competencyLevelRank").getIndex(index="0")
+					);
+
+addDesiredCompetency = #setCache(name="desired", item=#getCache(name="desired").decode().putInObject(dest="@recordId", item=#decode(obj="@recordDeets")));
+addHeldCompetency = #setCache(name="held", item=#getCache(name="held").decode().putInObject(dest="@recordId", item=#decode(obj="@recordDeets")));
+
+sortCompetencies = #object(
+						a=#object(
+								a=#setCache(name="lowestRank", item="100000"),
+								b=#setCache(name="lowestLevel", item=""),
+							),
+						b_findLowest=#decode(obj="@modelLevels").cforEach(op=findLowestLevel, paramName="levelId", valueName="levelObj", threaded="false"),
+						c_determineLevel=#if(operator="@recordLevel", operand=#getCache(name="lowestLevel"),
+												eq=addDesiredCompetency,
+												ne=addHeldCompetency
+											),
+					).ccall(
+						modelLevels=#decode(obj="@recordDeets").cget(modelLevels=""),
+						recordLevel=#decode(obj="@recordDeets").getByParam(param=":recordLevel").getIndex(index="0"),
+					);
+
+
+
+heldVsDesiredCompetencies = #object(
+								a=#object(
+									a=#setCache(name="desired", item=#object()),
+									b=#setCache(name="held", item=#object())
+								),
+								b=getUserCompetencies.cforEach(
+													op=sortCompetencies, 
+													paramName="recordId", 
+													valueName="recordDeets",
+													threaded="false"
+												),
+								c=#object(
+										held=#getCache(name="held").decode(),
+										desired=#getCache(name="desired").decode()
+									),
+							).ccall(
+								cacheId=#generateUUID()
+							).cget(c="");
+
+#decalsHeldVsDesiredCompetencies = heldVsDesiredCompetencies;
 
 
 //---------------------

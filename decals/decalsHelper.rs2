@@ -10,6 +10,16 @@ userDb={
 
 fileMdObj = #decalsFileMdObj();
 
+PRIMARY_ENVIRONMENT = #string(str="Primary Education");
+SECONDARY_ENVIRONMENT = #string(str="Secondary Education");
+HIGHER_ED_ENVIRONMENT = #string(str="Higher Education");
+VOCATIONAL_ENVIRONMENT = #string(str="Vocational");
+
+#decals_PRIMARY_ENVIRONMENT = PRIMARY_ENVIRONMENT;
+#decals_SECONDARY_ENVIRONMENT = SECONDARY_ENVIRONMENT;
+#decals_HIGHER_ED_ENVIRONMENT = HIGHER_ED_ENVIRONMENT;
+#decals_VOCATIONAL_ENVIRONMENT = VOCATIONAL_ENVIRONMENT;
+
 //============================
 //Grade Level
 //============================
@@ -101,7 +111,7 @@ getWordDefinitionDisplay=getWordDefinition.valueSet().cgetIndex(index="0").displ
 
 /decalsDefineWord=getWordDefinitionDisplay;
 
-
+ 
 //============================
 //Wiki Info
 getWikiInfo=#httpPost(
@@ -114,7 +124,7 @@ getWikiInfo=#httpPost(
 
 getWikiInfoDisplay=getWikiInfo.valueSet().cgetIndex(index="0").displayJson();
 
-/decalsWikiInfo=getWikiInfoDisplay;
+/decalsWikiInfo=getWikiInfoDisplay; 
 
 
 
@@ -138,7 +148,7 @@ appSettings=#object(
 ).cget(b="").displayJson();
                   
 /decalsAppSettings = appSettings;
-
+ 
 
 //--------------------------
 // Initial user
@@ -147,24 +157,32 @@ appSettings=#object(
 //Change values as appropriate
 //--------------------------
 
-initialAdminPassword=#add(a="<INITIAL ADMIN PASSWORD>");
+createCompetencyAdminUser = #competencyCreateUser(userId="@userId", password=#decalsInitialAdminPassword()); 
+ 
+putInitialUserInDb=#if(operator=#idxKeys(userDb).has(has="@userId"), operand="true",
+						ne=#object(
+								a=#object(
+										password=#bCryptHash(
+											password=#decalsInitialAdminPassword(),
+											rounds="10"
+										),
+										dateCreated=#date(_raw="true"),	
+										datePasswordUpdated=#date(_raw="true"),
+										firstName="DECALS",
+										lastName="Admin",
+										email="@userId",
+										roles=#listAdd(a=#decalsAdminRoleId())
+									).idxSet(userDb,key="@userId"),
+								b=createCompetencyAdminUser
+							)
+					);
 
-putInitialUserInDb=#object(
-	password=#bCryptHash(
-		password=initialAdminPassword,
-		rounds="10"
-	),
-	dateCreated=#date(_raw="true"),	
-	datePasswordUpdated=#date(_raw="true"),
-	firstName="DECALS",
-	lastName="Admin",
-	email="@userId",
-	roles=#listAdd(a=#decalsAdminRoleId())
-).idxSet(userDb,key="@userId");
 
 createFirstAdminUser=#object(
 	a=putInitialUserInDb,
 	b=#idxGet(userDb,key="@userId")
 ).ccall(userId="decalsadmin@decals.com").cget(a="").displayJson();
+ 
+#createFirstAdminAutoExecute = createFirstAdminUser;
  
 /decalsInitAdminUser=createFirstAdminUser;

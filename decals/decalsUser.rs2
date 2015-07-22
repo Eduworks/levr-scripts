@@ -138,6 +138,10 @@ deleteUserAndResources=#object(
 	e=#decalsRemoveUserFromAllCollections(userId=decalsPostData.cget(userId="")),
 	f=#decalsRemoveUserFromAllGroups(userId=decalsPostData.cget(userId="")),
 	g=#decalsDeleteUserGroups(userId=decalsPostData.cget(userId="")),
+	h=#catch(
+			try=#competencyDeleteUser(userId=decalsPostData.cget(userId=""), currentUser=decalsPostData.cget(userId="")),
+			runtime=""
+		),
 	y=deleteUser.ccall(userId=decalsPostData.cget(userId="")),
 	z=#object(msg="true")
 ).cget(z="").displayJson();
@@ -152,6 +156,10 @@ deleteUserTransferResources=#object(
 	e=#decalsRemoveUserFromAllCollections(userId=decalsPostData.cget(userId="")),	
 	f=#decalsRemoveUserFromAllGroups(userId=decalsPostData.cget(userId="")),
 	g=#decalsDeleteUserGroups(userId=decalsPostData.cget(userId="")),
+	h=#catch(
+			try=#competencyDeleteUser(userId=decalsPostData.cget(userId=""), currentUser=decalsPostData.cget(userId="")),
+			runtime=""
+		),
 	y=deleteUser.ccall(userId=decalsPostData.cget(userId="")),
 	z=#object(msg="true")
 ).cget(z="").displayJson();
