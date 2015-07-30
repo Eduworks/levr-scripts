@@ -97,8 +97,8 @@ userModelName= #add(b="user-", c="@userId");
 // Competency Model Structure URIs
 //==============
 
-competencyStructureURI = #string(str="http://www.competency.services/structure-competency");
-userStructureURI = #string(str="http://www.competency.services/structure-user");
+competencyStructureURI = #add(a=#competencyDefaultURI(), b="structure-competency");
+userStructureURI = #add(a=#competencyDefaultURI(), b="structure-user");
  
 #competencyStructureURI = competencyStructureURI;
 #competencyUserStructureURI = userStructureURI;
