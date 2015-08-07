@@ -590,6 +590,7 @@ checkAgentExists =  #if(operator=findAgentCount, operand="0",
 								eq="false", 
 								ne="true"
 						);
+#competencyCheckAgentExists = checkAgentExists;
 
 checkUserOrAgentExists = #if(operator=checkCurrentUserSet, operand="false",
 								ne=checkUserExists.ccall(userId="@currentUser"),

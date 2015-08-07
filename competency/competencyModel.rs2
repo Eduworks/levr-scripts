@@ -717,7 +717,7 @@ restoredAccessControl = #object(
 
 addToDB = #object(
 	ontologyId=#decode(obj="@modelInfo").cget(ontologyId=""),
-	uri=#decode(obj="@modelInfo").cget(uri=""),
+	uri=#add(a=#competencyDefaultURI(), b="@modelId"),
 	directory=#competencyDirectory(),
 	name=#decode(obj="@modelInfo").cget(name=""),	
 	description=#decode(obj="@modelInfo").cget(description=""),
@@ -729,9 +729,45 @@ addToDB = #object(
 	imports=#decode(obj="@modelInfo").cget(imports=""),
 	dateRestoredFromBackup=#competencyNow(),
 ).toParameter(op=createModelInDB, paramName="modelInfo");
+  
+fixUriPrefix =  #object(
+				b=#setCache(
+						name="start", 
+						item=#indexOf(
+								str="@modelRDF", 
+								substr="xmlns:j.1="
+							).add(a="11").debug()
+					),
+				c=#setCache(
+						name="end", 
+						item=#indexOf(
+								str=#string(op="substr", str="@modelRDF", begin=#getCache(name="start")), 
+								substr="structure-competency#"
+								).debug()
+					),
+				d=#setCache(name="oldUri", item=#string(
+													op="substr", 
+													str="@modelRDF", 
+													begin=#getCache(name="start"), 
+													end=#add(
+															a=#getCache(name="start").toDouble(), 
+															b=#getCache(name="end").toDouble()
+														)
+												).debug()
+					),
+				e=#string(
+						str="@modelRDF",
+						op="replace", 
+						regex=#getCache(name="oldUri"), 
+						with=#competencyDefaultURI()
+					).fileSave(path="@importPath")
+			).ccall(
+				cacheId=#generateUUID()
+			);
 
 addToTDB = #object(
 				a=#fileSave(obj="@modelRDF", path="@importPath"),
+				a=fixUriPrefix,
 				b=#ontologyTDBLoader(input="@importPath", tdbDirectory=#competencyDirectory())
 			).ccall(importPath=#add(a=#competencyImportDirectory(), b="@modelId", c=".rdf"));
 
