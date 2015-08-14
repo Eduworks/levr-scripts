@@ -286,11 +286,14 @@ setFileMetadata = #idxPut(
 		        		id="@fileId",
 		        		fileName_t=decalsPostData.cget(resourceTitle=""),
 		        		title_t=decalsPostData.cget(resourceTitle=""),
-		        		url_t=#add(
-		        				a=decalsPostData.cget(resourceUrl=""),
-		        				b="#lr-copy-",
-		        				c=#generateUUID()
-		        			),
+		        		url_t=#if(operator=decalsPostData.cget(resourceId=""), operand="",
+		        					eq=#add(
+		        							a=decalsPostData.cget(resourceUrl=""),
+		        							b="#lr-copy-",
+		        							c=#generateUUID()
+		        						),
+		        					ne=decalsPostData.cget(resourceUrl=""),
+		        				),
 		        		uploadDate_l=#date(_raw="true"),
 		        		updatedDate_l=#date(_raw="true"),
 		        		published_t="false",
@@ -305,6 +308,7 @@ setFileMetadata = #idxPut(
 checkAddCollectionMetadata = #object(
 							 	a=setFileMetadata.ccall(
 							 							uploadedBy_t=#decalsRetrieveSessionMetadata(sessionId=decalsPostData.cget(sessionId="")).cget(userId=""),
+							 							updatedDate_l=#date(_raw="true"),
 							 							keywords=#if(operator=#decalsFileMdObj(), operand="",
 																			eq=#if(operator="@LRInfo", operand="",
 																					eq=#if(operator=#decode(obj="@collectionMetadata").cget(keywords=""), operand="",
@@ -312,7 +316,7 @@ checkAddCollectionMetadata = #object(
 																									ne=#decode(obj="@collectionMetadata").cget(keywords="").toArray()
 																								),
 																						),
-																					ne=#if(operator=#decode(obj="@LRInfo").keySet().has(has="keywords").debug(), operand="true",
+																					ne=#if(operator=#decode(obj="@LRInfo").keySet().has(has="keywords"), operand="true",
 																							eq=#decode(obj="@LRInfo").cget(keywords="").toArray().union(a=#decode(obj="@collectionMetadata").cget(keywords="").toArray()),
 																							ne=#decode(obj="@collectionMetadata").cget(keywords="").toArray()
 																						),
@@ -436,21 +440,23 @@ checkAddCollectionMetadata = #object(
 																		),
 														old_title_t=#if(operator="@LRInfo", operand="",
 																		ne=#if(operator=#decode(obj="@LRInfo").cget(title=""), operand="",
-																				ne=#decode(obj="@LRInfo").cget(mimetype="")
-																			)
+																				ne=#decode(obj="@LRInfo").cget(title=""),
+																				eq=""
+																			),
+																		eq=""
 																	)
-							 						),
+							 						).debug(),
 								b=#solrAddDocs(
 										url=#decalsDarSolrUrl(),
-									    documents=#decalsFileMdObj(fileId="@fileId").putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true").putInObject(dest="collectionObj", _remove="true").debug()
+									    documents=#decalsFileMdObj(fileId="@fileId").putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true").putInObject(dest="collectionObj", _remove="true")
 								    )
 							).ccall(
-								fileId=#if(operator=#indexOf(str=decalsPostData.cget(resourceUrl=""), substr=#decalsFileDownloadUrlPrefix()), operand="0",
-											eq=#string(str=decalsPostData.cget(resourceUrl=""), op="substr", begin=#decalsFileDownloadUrlPrefix().count()),
-											ne=#generateUUID()
+								fileId=#if(operator=decalsPostData.cget(resourceId=""), operand="",
+											eq=#generateUUID(),
+											ne=decalsPostData.cget(resourceId="")
 										),
 								collectionMetadata=collectionObj.cget(metadata=""),
-								LRInfo=decalsPostData.cget(itemInfo="").debug(), 
+								LRInfo=decalsPostData.cget(itemInfo=""), 
 							);
 
 addCollectionItem=#object(

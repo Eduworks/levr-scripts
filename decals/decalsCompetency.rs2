@@ -175,3 +175,49 @@ addDesiredCompetency = #object(
 displayAddDesiredCompetency = addDesiredCompetency.displayJson(_collapse="true");
 
 /decalsAddDesiredCompetency = displayAddDesiredCompetency;
+
+
+//---------------------
+// Get Competency Info
+
+parseUriGetCompetency = #competencyRead(
+								modelId=#string(
+											str="@competencyUri", 
+											op="substr", 
+											begin=#competencyDefaultURI().count().debug(), 
+											end=#add(
+													a=#competencyDefaultURI().count(),
+													b=#indexOf(
+															str=#string(
+																	str="@competencyUri", 
+																	op="substr", 
+																	begin=#competencyDefaultURI().count()
+																).debug(), 
+															substr="#"
+														)
+												)
+										).debug(),
+								competencyId=#string(
+											str="@competencyUri", 
+											op="substr", 
+											begin=#add(
+													a=#indexOf(
+															str="@competencyUri", 
+															substr="#"
+														),
+													b="1"
+												)
+										).debug(),
+								currentUser=#competencySessionUser(sessionId="@sessionId")
+							);
+							
+							
+getCompetencyInfo = #if(operator=#indexOf(str="@competencyUri", substr=#competencyDefaultURI()), operand="0",
+							eq=parseUriGetCompetency,
+							ne=#error(msg=#add(a="Unable to Get Competency Information for: ", b="@competencyUri"))
+						).ccall(
+							competencyUri=decalsPostData.cget(competencyUri=""),
+							sessionId=decalsPostData.cget(sessionId="")
+						).displayJson(_collapse="true"); 
+
+/decalsGetCompetencyInfo = getCompetencyInfo;

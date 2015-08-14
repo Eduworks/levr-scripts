@@ -157,7 +157,7 @@ appSettings=#object(
 //Change values as appropriate
 //--------------------------
 
-createCompetencyAdminUser = #competencyCreateUser(userId="@userId", password=#decalsInitialAdminPassword()); 
+createCompetencyAdminUser = #competencyCreateUser(userId="@userId", firstName="Decals", lastName="Admin", email="@userId", password=#decalsInitialAdminPassword()); 
  
 putInitialUserInDb=#if(operator=#idxKeys(userDb).has(has="@userId"), operand="true",
 						ne=#object(
