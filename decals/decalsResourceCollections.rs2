@@ -298,8 +298,8 @@ setFileMetadata = #idxPut(
 		        		updatedDate_l=#date(_raw="true"),
 		        		published_t="false",
 		        		old_title_t=decalsPostData.cget(resourceTitle=""),
-		        	).buildArguments(key="keywords_txt", value=#decode(obj="@keywords"),
-		        					key1="objectives_txt", value1=#decode(obj="@objectives"),
+		        	).buildArguments(key="keywords_txt", value=#toArray(obj="@keywords"),
+		        					key1="objectives_txt", value1=#toArray(obj="@objectives"),
 		        					remove="sessionId", remove1="collectionId", remove2="collectionMetadata", remove3="LRInfo",
 		        					remove4="keywords", remove5="objectives",
 		        					hard="true"
@@ -445,7 +445,7 @@ checkAddCollectionMetadata = #object(
 																			),
 																		eq=""
 																	)
-							 						).debug(),
+							 						),
 								b=#solrAddDocs(
 										url=#decalsDarSolrUrl(),
 									    documents=#decalsFileMdObj(fileId="@fileId").putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true").putInObject(dest="collectionObj", _remove="true")
