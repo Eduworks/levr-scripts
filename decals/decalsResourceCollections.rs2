@@ -328,8 +328,8 @@ checkAddCollectionMetadata = #object(
 																		),
 														objectives=#if(operator=#decalsFileMdObj(), operand="",
 																			eq=#if(operator=#decode(obj="@collectionMetadata").cget(objectives=""), operand="",
-																					ne=#if(operator=#decode(obj="@collectionMetadata").cget(objectives="").count(), operand="0",
-																							ne=#decode(obj="@collectionMetadata").cget(objectives="")
+																					ne=#if(operator=#decode(obj="@collectionMetadata").cget(objectives="").toArray().count(), operand="0",
+																							ne=#decode(obj="@collectionMetadata").cget(objectives="").toArray()
 																						),
 																				),
 																			ne=#if(operator=#decalsFileMdObj().cget(objectives_txt="").toArray().count(), operand="0",
