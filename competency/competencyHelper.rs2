@@ -169,29 +169,6 @@ checkUserUris = #if(operator=#decode(obj="@users").count(), operand="1",
 					 ge=checkUri,
 					).ccall(users=#competencyGetUserIds()); 
  
-cacheDb = {
-	indexDir = "./cache",
-	databaseName = "cache",
-	index = "0"
-};
- 
-setCache = #if(operator=#idxGet(cacheDb, key="@cacheId"), operand="",
-				eq=#object().putInObject(
-									dest="@name",
-									item="@item"
-							),
-				ne=#idxGet(cacheDb, key="@cacheId").toObject().putInObject(
-																dest="@name",
-																item="@item"	
-															)
-			).idxSet(cacheDb, key="@cacheId", ttlAccessSeconds="60").toObject().getByParam(param="@name");
-
-#setCache = setCache;
-
-getCache = #idxGet(cacheDb, key="@cacheId").toObject().getByParam(param="@name");
- 
-#getCache = getCache;
- 
 prepFile = #object(
 				a=#setCache(
 						name="fileString", 
