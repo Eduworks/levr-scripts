@@ -1,31 +1,5 @@
 decalsPostData=#getMultipartPostData(field="decalsData").toObject();
 
-cacheDb = {
-	indexDir = "./cache",
-	databaseName = "cache",
-	index = "0"
-};
- 
-setCache = #if(operator=#idxGet(cacheDb, key="@cacheId"), operand="",
-				eq=#object().putInObject(
-									dest="@name",
-									item="@item"
-							),
-				ne=#idxGet(cacheDb, key="@cacheId").toObject().putInObject(
-																dest="@name",
-																item="@item"	
-															)
-			).idxSet(cacheDb, key="@cacheId", ttlAccessSeconds="60").toObject().getByParam(param="@name");
-
-#setCache = setCache;
-
-getCache = #idxGet(cacheDb, key="@cacheId").toObject().getByParam(param="@name");
- 
-#getCache = getCache;
-
-
-
-
 getCompetencyDetails = #decode(obj="@recordObj").putInObject(
 													dest="competencyDetails",
 													item=#competencyRead(
@@ -73,20 +47,20 @@ webGetUserCompetencies = getUserCompetencies.displayJson(_collapse="true");
 
 findLowestLevel = #if(operator="@levelRank", operand=#getCache(name="lowestRank"),
 						lt=#object(
-								a=#setCache(name="lowestRank", item="@levelRank"),
-								b=#setCache(name="lowestLevel", item="@levelId"),
+								a=#setCache(name="lowestRank", item="@levelRank", accessSeconds="60"),
+								b=#setCache(name="lowestLevel", item="@levelId", accessSeconds="60"),
 							)
 					).ccall(
 						levelRank=#decode(obj="@levelObj").getByParam(param=":competencyLevelRank").getIndex(index="0")
 					);
 
-addDesiredCompetency = #setCache(name="desired", item=#getCache(name="desired").decode().putInObject(dest="@recordId", item=#decode(obj="@recordDeets")));
-addHeldCompetency = #setCache(name="held", item=#getCache(name="held").decode().putInObject(dest="@recordId", item=#decode(obj="@recordDeets")));
+addDesiredCompetency = #setCache(name="desired", item=#getCache(name="desired").decode().putInObject(dest="@recordId", item=#decode(obj="@recordDeets")), accessSeconds="60");
+addHeldCompetency = #setCache(name="held", item=#getCache(name="held").decode().putInObject(dest="@recordId", item=#decode(obj="@recordDeets")), accessSeconds="60");
 
 sortCompetencies = #object(
 						a=#object(
-								a=#setCache(name="lowestRank", item="100000"),
-								b=#setCache(name="lowestLevel", item=""),
+								a=#setCache(name="lowestRank", item="100000", accessSeconds="60"),
+								b=#setCache(name="lowestLevel", item="", accessSeconds="60"),
 							),
 						b_findLowest=#decode(obj="@modelLevels").cforEach(op=findLowestLevel, paramName="levelId", valueName="levelObj", threaded="false"),
 						c_determineLevel=#if(operator="@recordLevel", operand=#getCache(name="lowestLevel"),
@@ -102,8 +76,8 @@ sortCompetencies = #object(
 
 heldVsDesiredCompetencies = #object(
 								a=#object(
-									a=#setCache(name="desired", item=#object()),
-									b=#setCache(name="held", item=#object())
+									a=#setCache(name="desired", item=#object(), accessSeconds="60"),
+									b=#setCache(name="held", item=#object(), accessSeconds="60")
 								),
 								b=getUserCompetencies.cforEach(
 													op=sortCompetencies, 
@@ -147,16 +121,16 @@ addRecord = #competencyCreateRecord(
 
 findFirstLevel = #if(operator="@levelRank", operand=#getCache(name="lowestRank"),
 						le=#object(
-								a=#setCache(name="smallestLevel", item="@levelId"),
-								b=#setCache(name="lowestRank", item="@levelRank"),
+								a=#setCache(name="smallestLevel", item="@levelId", accessSeconds="60"),
+								b=#setCache(name="lowestRank", item="@levelRank", accessSeconds="60"),
 							)
 					).ccall(
 						levelRank=#decode(obj="@levelObj").getByParam(param=":competencyLevelRank").getIndex(index="0")
 					);
 
 addDesiredCompetency = #object(
-							a=#setCache(name="smallestLevel", item=""),
-							b=#setCache(name="lowestRank", item="999999"),
+							a=#setCache(name="smallestLevel", item="", accessSeconds="60"),
+							b=#setCache(name="lowestRank", item="999999", accessSeconds="60"),
 							c=#competencyReadCompetencyLevels(
 										competencyId=decalsPostData.cget(competencyId=""), 
 										modelId=decalsPostData.cget(modelId=""), 

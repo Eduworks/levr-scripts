@@ -128,7 +128,7 @@ performBasicSearch=#httpPost(
         X-Api-Key=#decalsLrSearchApiKey(),
         url=#add(a=#decalsBasicLrSearchUrl(),
                  b="?q=",
-        		 d=decalsPostData.cget(searchTerm=""),
+        		 c=decalsPostData.cget(searchTerm=""),
         		 d="&limit=",
         		 e=decalsPostData.cget(itemsPerPage=""),
         		 f="&page=",

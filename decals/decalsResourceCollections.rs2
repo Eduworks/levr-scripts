@@ -197,6 +197,8 @@ getCollection=#object(
 	b=collectionObj.ccall(collectionId=decalsPostData.cget(collectionId=""))
 ).cget(b="").displayJson();
 
+#decalsGetCollection = collectionObj;
+
 /decalsGetCollection=getCollection;
 
 //--------------------------

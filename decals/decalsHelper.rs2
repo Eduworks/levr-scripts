@@ -186,3 +186,81 @@ createFirstAdminUser=#object(
 #createFirstAdminAutoExecute = createFirstAdminUser;
  
 /decalsInitAdminUser=createFirstAdminUser;
+
+
+//============================
+//Tracking DB config
+
+trackingDb={
+	indexDir="..%2Fdb",
+	databaseName="dbTracking",
+	index="tracking"
+};
+
+
+//============================
+//Tracking - For DECALS qualtrics/AMT integration
+//============================
+
+
+trackObj=#idxGet(trackingDb,key="@trackingId").toObject();
+allTrackingObj=#idxKeys(trackingDb).cforEach(paramName="trackingId",op=trackObj);
+
+//==============
+//Show all tracking data
+
+allTrackGet=allTrackingObj.displayJson();
+
+/decalsShowAllTracking=allTrackGet;
+
+//============================
+//Add tracking data
+newKey=#generateUUID();
+
+addTestTrackMn=#object(assignmentId="@assignmentId",
+                       timestamp=#date(dateFormat="yyyy-MM-dd'T'HH:mm:ss.SSSZ"),
+                       message="@message").idxSet(trackingDb,key=newKey);
+
+addTestTrack=#object(
+	a=addTestTrackMn.ccall(assignmentId=decalsPostData.cget(assignmentId=""),message=decalsPostData.cget(message="")),
+	b="true"
+).cget(b="").displayJson();
+
+/decalsAddTracking=addTestTrack;
+
+
+//============================
+//Tracking by assignment ID
+
+assignmentIdTracking=allTrackingObj.cforEach(paramName="trackingId",
+                                             op=#if(operator=trackObj.cget(assignmentId=""),
+                                                    operand="@assignmentId",
+                                                    eq=trackObj));
+
+getAssignmentIdTracking=assignmentIdTracking.displayJson();
+
+/decalsGetTrackingByAssignmentId=getAssignmentIdTracking;
+
+//============================
+//Delete tracking data by tracking ID
+deleteTrackingObj=#object(a=#idxDelete(trackingDb,key="@trackingId"),
+                          b="true").cget(b="");
+
+deleteTrackingById=deleteTrackingByIdObj.displayJson();
+
+/decalsDeleteTrackingById=deleteTrackingById;
+
+
+//============================
+//Delete tracking data by assignment ID
+
+deleteTrackingByAssignmentIdObj=#object(a=allTrackingObj.cforEach(paramName="trackingId",
+                                                                  op=#if(operator=trackObj.cget(assignmentId=""),
+                                                                         operand="@assignmentId",
+                                                                         eq=#idxDelete(trackingDb,key="@trackingId"))
+                                                                  ),
+                                        b="true").cget(b="");
+
+deleteTrackingByAssignmentId=deleteTrackingByAssignmentIdObj.displayJson();
+
+/decalsDeleteTrackingByAssignmentId=deleteTrackingByAssignmentId;
