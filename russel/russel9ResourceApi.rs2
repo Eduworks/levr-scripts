@@ -205,7 +205,7 @@ disableResourceSearch = #if(operator=#checkACLAllServiceApi(username="@username"
 																   permissionname=#permissionRemovePermissions()),
 								  operand="true",
 								  eq=#updateResourceMetadataApi(resourceId=#sessionResourceId(),
-															    metadata=#object(attr_entities=#removeDuplicates(obj=#toArray(obj="@rec").remove(item=#sessionPermissionName())),
+															    metadata=#object(attr_entities=#removeDuplicates(obj=#toArray(obj="@rec").cremove(item=#sessionPermissionName()).debug()).debug(),
 																				 showEntities="true")).ccall(rec=#getResourceMetadataApi(resourceId=#sessionResourceId()).cget(attr_entities="")).displayJson(),
 								  ne=#errorInsufficientPermissions()),
 						   ne=#errorInsufficientPermissions()).ccall(username=#getSessionApi(sessionId=#sessionId()).toObject().cget(username=""));
