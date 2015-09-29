@@ -1,0 +1,211 @@
+//===============================================
+// REQUIRES: 
+// 	base/libSession.rs2
+//	base/libUser.rs2
+// 	base-v2/libUser-v2.rs2
+//===============================================
+//
+// User Login/Verify Session Functions that can be used in any application to authenticate users
+// and validate sessions
+//
+//===========================
+// Parameters
+//---------------------------
+
+session_mins=#string(str="0");
+session_hours=#string(str="1");
+session_days=#string(str="0");
+
+increment_mins=#string(str="0");
+increment_hours=#string(str="1");
+increment_days=#string(str="0");
+
+//===========================
+// Errors
+//---------------------------
+
+throwSessionExpiredError = #error(msg="sessionId expired");
+
+throwBadPasswordError = #error(msg="password invalid");
+
+throwLoginRequiredError = #error(msg="sessionId invalid");
+
+throwSessionIdEmptyError = #error(msg="sessionId required");
+
+//===========================
+// Increment Session Length
+//----LEVR Call--------------
+// #authIncrementSessionLength
+//----Parameters-------------
+// 	sessionDir
+//	sessionDbName
+//	sessionDbIndex
+// 	sessionId
+// 	(optional) mins
+//  (optional) hours
+//	(optional) days
+//===========================
+
+sessionDB = {
+	indexDir = "@sessionDir",
+	databaseName = "@sessionDbName",
+	index = "@sessionDbIndex"
+};
+
+incrementSessionLength = #sessionUpdate(
+	sessionDB, 
+	sessionId="@sessionId", 
+	expires=#date(
+			addMinutes=#if(operator="@mins", operand="", eq=increment_mins, ne="@mins"),
+			addHours=#if(operator="@hours", operand="", eq=increment_hours, ne="@hours"), 
+			addDays=#if(operator="@days", operand="", eq=increment_days, ne="@days"),
+			_raw="true"
+		)
+).string(str="true");
+
+#authIncrementSessionLength = incrementSessionLength;
+
+
+//===========================
+// Validate Session
+//----LEVR Call--------------
+// #authValidateSession
+//----Parameters-------------
+// 	sessionDir
+//	sessionDbName
+//	sessionDbIndex
+// 	sessionId
+//	noIncrement
+//===========================
+
+
+
+validateSession = #if(operator="@sessionId", operand="",
+	eq=throwSessionIdEmptyError,
+	ne=#if(operator=#sessionRead(sessionDB, sessionId="@sessionId").displayJson(_collapse="true"), operand=#add(a="{", b="}"), 
+			eq=#string(str="false"),
+			ne= #if(operator=#sessionRead(sessionDB, sessionId="@sessionId").get(expires=""), operand=#date(_raw="true"),
+					lt= #object(
+							a=#sessionDelete(sessionDB, sessionId="@sessionId"),
+							b=throwSessionExpiredError
+						),
+					ge= #if(operator="@noIncrement", operand=#true(),
+							ne=incrementSessionLength
+						).string(str="true")
+				)
+		)
+);
+
+#authValidateSession = validateSession;
+
+
+//===========================
+// Login
+//----LEVR Call--------------
+// #authLogin
+//----Parameters-------------
+// 	sessionDir
+//	sessionDbName
+//	sessionDbIndex
+//	userDir
+//	userDbName
+//	userDbIndex
+// 	userId
+//	password
+//	(optional) session_mins
+// 	(optional) session_hours
+//	(optional) session_days
+//===========================
+
+userDB = {
+	indexDir = "@userDir",
+	databaseName="@userDbName",
+	index = "@userDbIndex"
+};
+
+tryLogin = #catch(try=#userLogin(userDB), runtime=throwBadPasswordError);
+
+login = #if(operator=tryLogin, operand="true", 
+	ne= #throwUserIdNotExistError(),
+	eq= #object(
+			deleteOld= #sessionDelete(
+					sessionDB,
+					sessionId=#v2UserRead(userDB, userId="@userId").get(sessionId="")
+				),
+			sessionId= "@sessionId",
+			sessionInfo= #sessionRead(sessionDB), 
+			setUserSession= #v2UserUpdate(
+					userDB, 
+					userId="@userId", 
+					sessionId="@sessionId"
+				).buildArguments(
+					remove="sessionDir",
+					remove1="sessionDbName",
+					remove2="sessionDbIndex",
+					hard="true"
+				),
+			userInfo= #v2UserRead(userDB).debug()
+		).call(
+			sessionId= #sessionCreate(
+					sessionDB, 
+					expires=#date(
+							addMinutes=#if(operator="@session_mins", operand="", eq=session_mins, ne="@session_mins"),
+							addHours=#if(operator="@session_hours", operand="", eq=session_hours, ne="@session_hours"),
+							addDays=#if(operator="@session_days", operand="", eq=session_days, ne="@session_days"),
+							_raw="true"
+						)
+				)
+		).buildArguments(remove="password", hard="true").get(userInfo="")
+);
+
+checkLogin = #object(
+	a= #errorIfUserIdEmpty(),
+	b= #errorIfUserIdNotExist(userDB),
+	c= #errorIfPasswordEmpty(),
+	d= login
+).cget(d="");
+
+
+#authLogin = checkLogin;
+
+
+//===========================
+// Get Session User
+//----LEVR Call--------------
+// #authSessionUser
+//----Parameters-------------
+// 	sessionDir
+//	sessionDbName
+//	sessionDbIndex
+//	sessionId
+//===========================
+getSessionUser = #if(operator=validateSession, operand="true",
+	eq= #sessionRead(
+			sessionDB, 
+			sessionId="@sessionId"
+		).cget(userId=""),
+	ne= ""
+);
+
+#authSessionUser = getSessionUser;
+
+
+//===========================
+// Authentication Required call to simplify front facing web services
+//----LEVR Call--------------
+// #authRequired
+//----Parameters-------------
+// 	sessionDir
+//	sessionDbName
+//	sessionDbIndex
+//	sessionId
+//===========================
+
+requireLogin = #if(operator="@currentUser", operand="",
+	eq=throwLoginRequiredError,
+	ne="@currentUser"
+).ccall(
+	currentUser=getSessionUser
+);
+
+#authRequired = requireLogin;

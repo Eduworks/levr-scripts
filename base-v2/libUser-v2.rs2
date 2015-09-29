@@ -1,0 +1,183 @@
+//===============================================
+// REQUIRES: 
+//	base/libUser.rs2
+//===============================================
+//
+// User Create/Read/Update/Delete Functions that can be used in any application to create basic users.
+// User Information specific to your application should be added to the userDb after the base create calls 
+// using the update function
+//
+//===========================
+// Errors
+//---------------------------
+
+throwUserExistsError = #error(msg="User Already Exists");
+
+throwUserIdNotExistError = #error(msg="User doesn't exist");
+
+throwUserIdEmptyError = #error(msg="userId required");
+
+throwPasswordEmptyError = #error(msg="password required");
+
+
+
+errorIfUserIdExists = #if(operator=#execute(service="v2UserIds").cforEach(op="").has(has="@userId"), operand=#true(),
+	eq=throwUserExistsError
+);
+
+errorIfUserIdNotExist = #if(operator=#execute(service="v2UserIds").cforEach(op="").has(has="@userId"), operand=#true(),
+	ne=throwUserIdNotExistError
+);
+
+errorIfUserIdEmpty = #if(operator="@userId", operand="",
+	eq=throwUserIdEmptyError
+);
+
+errorIfPasswordEmpty = #if(operator="@password", operand="",
+	eq=throwPasswordEmptyError,
+);
+
+
+
+#throwUserIdNotExistError = throwUserIdNotExistError;
+
+#errorIfUserIdNotExist = errorIfUserIdNotExist;
+
+#errorIfUserIdEmpty = errorIfUserIdEmpty;
+#errorIfPasswordEmpty = errorIfPasswordEmpty;
+//===========================
+// Create User v2
+//----LEVR Call--------------
+// #v2UserCreate
+//----Parameters-------------
+// 	indexDir
+//	databaseName
+//	index
+//	userId
+//	password
+//===========================
+
+createUserInDb = #object(
+					a=#userCreate().buildArguments(remove="currentUser", hard="true"),
+					b=#userUpdateField(userId="@userId").buildArguments(remove="password", hard="true")
+				);
+
+createUser = #object(
+	b=#errorIfUserIdEmpty(),
+	c=errorIfUserIdExists,
+	d=#errorIfPasswordEmpty(),
+	f=createUserInDb,
+	g=#execute(service="v2UserRead", userId="@userId", indexDir="@indexDir", databaseName="@databaseName", index="@index")
+).cget(g="");
+
+#v2UserCreate = createUser;
+
+
+//===========================
+// Read User v2 Ids
+//----LEVR Call--------------
+// #v2UserIds
+//----Parameters-------------
+// 	indexDir
+//	databaseName
+//	index
+//===========================
+
+userIds = #idxKeys(indexDir="@indexDir", databaseName="@databaseName", index="@index").toArray();
+
+#v2UserIds = userIds;
+
+
+//===========================
+// Read User v2
+//----LEVR Call--------------
+// #v2UserRead
+//----Parameters-------------
+// 	indexDir
+//	databaseName
+//	index
+// 	userId
+//===========================
+
+readUser = #object(
+	a=#errorIfUserIdEmpty(),
+	b=errorIfUserIdNotExist,
+	c=#userGet().remove(
+			password="",
+			userDir="",
+			userDbName="",
+			userDbIndex="",
+			sessionDir="",
+			sessionDbName="",
+			sessionDbIndex=""
+		)
+).cget(c="");
+
+#v2UserRead = readUser;
+
+//===========================
+// Read All Users v2
+//----LEVR Call--------------
+// #v2UserReadAll
+//----Parameters-------------
+// 	indexDir
+//	databaseName
+//	index
+//===========================
+
+readAll = userIds.cforEach(op=readUser, paramName="userId");
+
+#v2UserReadAll = readAll;
+
+//===========================
+// Update User v2
+//----LEVR Call--------------
+// #v2UserUpdate
+//----Parameters-------------
+// 	indexDir
+//	databaseName
+//	index
+// 	userId
+// 	<any fields to be added to user>
+//===========================
+
+updateUserDb = #userUpdate().buildArguments(
+	remove="password",
+	remove1="userDir",
+	remove2="userDbName",
+	remove3="userDbIndex",
+	remove4="currentUser",
+	hard="true"
+);
+
+userUpdate = #object(
+	a=#errorIfUserIdEmpty(),
+	b=errorIfUserIdNotExist,
+	c=updateUserDb,
+);
+
+#v2UserUpdate = userUpdate;
+
+//===========================
+// Delete User v2
+//----LEVR Call--------------
+// #v2UserUpdate
+//----Parameters-------------
+// 	indexDir
+//	databaseName
+//	index
+// 	userId
+//===========================
+
+deleteUserFromDb = #object(
+	b=#idxDelete(indexDir="@indexDir", databaseName="@databaseName", index="@index", key="@userId"),
+	c="true"
+).cget(c="");
+
+deleteUser = #object(
+	a=#errorIfUserIdEmpty(),
+	b=errorIfUserIdNotExist,
+	c=deleteUserFromDb,
+).cget(c="");
+
+#v2UserDelete = deleteUser;
