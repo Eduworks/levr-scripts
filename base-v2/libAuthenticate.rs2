@@ -144,7 +144,7 @@ login = #if(operator=tryLogin, operand="true",
 					remove2="sessionDbIndex",
 					hard="true"
 				),
-			userInfo= #v2UserRead(userDB).debug()
+			userInfo= #v2UserRead(userDB)
 		).call(
 			sessionId= #sessionCreate(
 					sessionDB, 
