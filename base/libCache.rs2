@@ -19,7 +19,7 @@ setCache = #if(operator=#idxGet(cacheDb, key="@cacheId"), operand="",
 			).idxSet(
 				cacheDb, 
 				key="@cacheId", 
-				ttlAccessSeconds=#if(operator="@accessSeconds", operand="", eq="", ne="@accessSeconds")
+				ttlAccessSeconds=#if(operator="@accessSeconds", operand="", eq="60", ne="@accessSeconds")
 			).toObject().getByParam(param="@name");
 
 #setCache = setCache;
