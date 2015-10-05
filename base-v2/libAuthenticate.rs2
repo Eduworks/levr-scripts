@@ -128,12 +128,17 @@ tryLogin = #catch(try=#userLogin(userDB), runtime=throwBadPasswordError);
 login = #if(operator=tryLogin, operand="true", 
 	ne= #throwUserIdNotExistError(),
 	eq= #object(
-			deleteOld= #sessionDelete(
-					sessionDB,
-					sessionId=#v2UserRead(userDB, userId="@userId").get(sessionId="")
+			deleteOld= #if(operator="@oldSessionId", operand="",
+					ne=#sessionDelete(
+							sessionDB,
+							sessionId="@oldSessionId"
+						)
+				).ccall(
+					oldSessionId=#v2UserRead(userDB, userId="@userId").get(sessionId="")
 				),
 			sessionId= "@sessionId",
 			sessionInfo= #sessionRead(sessionDB), 
+			ids=#idxKeys(sessionDB).debug(),
 			setUserSession= #v2UserUpdate(
 					userDB, 
 					userId="@userId", 
@@ -147,7 +152,8 @@ login = #if(operator=tryLogin, operand="true",
 			userInfo= #v2UserRead(userDB)
 		).call(
 			sessionId= #sessionCreate(
-					sessionDB, 
+					sessionDB,
+					userId="@userId", 
 					expires=#date(
 							addMinutes=#if(operator="@session_mins", operand="", eq=session_mins, ne="@session_mins"),
 							addHours=#if(operator="@session_hours", operand="", eq=session_hours, ne="@session_hours"),
