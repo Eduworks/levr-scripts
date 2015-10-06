@@ -736,14 +736,16 @@ fixUriPrefix =  #object(
 						item=#indexOf(
 								str="@modelRDF", 
 								substr="xmlns:j.1="
-							).add(a="11").debug()
+							).add(a="11"),
+						accessSeconds="60"
 					),
 				c=#setCache(
 						name="end", 
 						item=#indexOf(
 								str=#string(op="substr", str="@modelRDF", begin=#getCache(name="start")), 
 								substr="structure-competency#"
-								).debug()
+								),
+						accessSeconds="60"
 					),
 				d=#setCache(name="oldUri", item=#string(
 													op="substr", 
@@ -753,7 +755,8 @@ fixUriPrefix =  #object(
 															a=#getCache(name="start").toDouble(), 
 															b=#getCache(name="end").toDouble()
 														)
-												).debug()
+												),
+						accessSeconds="60"
 					),
 				e=#string(
 						str="@modelRDF",
