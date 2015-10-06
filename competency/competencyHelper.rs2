@@ -4,7 +4,10 @@
 
 checkDefaultDirectory = #if(operator=#fileExists(safe="false",path=#competencyDefaultDirectory()), operand="true", 
 		eq=#competencyDefaultDirectory(), 
-		ne=#createDirectory(safe="false",path=#competencyDefaultDirectory())
+		ne=#object(
+				a=#createDirectory(safe="false",path=#competencyDefaultDirectory()),
+				b=#competencyDefaultDirectory(),
+			).cget(b="")
 );
 
 baseDirectory = #if(operator="@competencyDirectory", operand="", 
@@ -180,8 +183,8 @@ prepFile = #object(
 						name="start", 
 						item=#indexOf(
 								str=#getCache(name="fileString"), 
-								substr=#add(a="<!ENTITY ", b="@fileName")
-							).add(a="2", b=#string(str=#add(a="<!ENTITY ", b="@fileName"), op="length"))
+								substr="rdf:RDF xmlns="
+							).add(a="2", b=#string(str="rdf:RDF xmlns", op="length"))
 					),
 				c=#setCache(
 						name="end", 
@@ -205,10 +208,11 @@ prepFile = #object(
 						op="replace", 
 						regex=#getCache(name="oldUri"), 
 						with=#competencyDefaultURI()
-					).fileSave(path=#add(a=#competencyStructureDirectory(), b="/", c="@fileName", d=".owl"))
+					).fileSave(path=#add(a=#competencyStructureDirectory(), b="/", c="@fileName", d=".owl")),
+				f=#true()
 			).ccall(
 				cacheId=#generateUUID()
-			);
+			).cget(f="");
 			
 																					
 prepStructureFiles = #add(a="[",b="]").toArray().append(
@@ -227,10 +231,10 @@ setup = #object(
 									extension=".owl", 
 									tdbDirectory=#competencyDirectory()
 								)
-							)
+							).cget(a=""),
 					).ccall(uris=#ontologyListOntologies(directory=#competencyDirectory())),
 	d_default=#competencyCreateDefaultModel(),
-	e=#decode(obj=checkUserUris),
+	e_users=#decode(obj=checkUserUris),
 	f_guestUser=createGuestIfSet,
 );      
     

@@ -175,7 +175,7 @@ checkDefault = #if(operand=#decode(obj="@uris").has(has=#add(a=#competencyDefaul
 						ne=#object(
 								a=deleteOld,
 								b=createDefault
-							)
+							).cget(b="").toParameter(op=getModelInfo, paramName="k")
 					).ccall(uris=#ontologyListOntologies(directory=#competencyDirectory()));
 
 #competencyCreateDefaultModel = checkDefault;
