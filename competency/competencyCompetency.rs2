@@ -67,7 +67,8 @@ createCompetency = #object(
 	a=#competencyErrorModelIdSet(),
 	b=#competencyErrorModelExists(),
 	c=#competencyErrorUserOrAgentWriteAccess(),
-	d=#ontologyCreateInstance(createCompParams)
+	d=#ontologyCreateInstance(createCompParams),
+	e=#competencyIncremementModelCompetencyCount(),
 ).get(d="");
 
 #competencyCreate = createCompetency;
@@ -84,7 +85,11 @@ createCompetency = #object(
 readCompParams = {
 	directory = #competencyDirectory(),
 	ontologyId = #competencyGetModelUri(),
-	instanceId = "@competencyId",  
+	instanceId = "@competencyId", 
+	inference=#if(operator="@inference", operand="",
+			eq="@inference",
+			ne="false"
+		) 
 };
 
 readCompetency = #ontologyReadInstance(readCompParams);
@@ -112,7 +117,14 @@ readAllCompParams = {
 	directory = #competencyDirectory(),
 	ontologyId = #competencyGetModelUri(),  
 	classId="Competency",
-	local="true",
+	local=#if(operator="@local", operand="",
+			ne="@local",
+			eq="true",
+		),
+	inference=#if(operator="@inference", operand="",
+			ne="@inference",
+			eq="true"
+		) 
 };
 
 readAllCompetency = #ontologyReadClassInstances(readAllCompParams);

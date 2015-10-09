@@ -95,7 +95,8 @@ createAndAddToDB = createOntWithUUID.putInObject(
 												ne=#competencyThrowModelPrivacyValue()
 											)
 								)
-						)
+						),
+				locked="false"
 			 ),
 ).putInObject(
 	dest="creator",
@@ -121,6 +122,9 @@ createAndAddToDB = createOntWithUUID.putInObject(
 ).putInObject(
 	dest="imports",
 	item=#add(a="[", b="]"),
+).putInObject(
+	dest="competencyCount",
+	item=#toInteger(obj="0"),
 ).toParameter(op=createModelInDB, paramName="modelInfo");
 
 // 	4) Add Structure Import to New Ontology
@@ -446,6 +450,31 @@ competencyUpdateModelSource = #object(
 								).get(c="");
 
 #competencyUpdateModelSource = competencyUpdateModelSource;
+
+//==============
+// Increment Model Competency Count
+//--------------
+// #competencyIncremementModelCompetencyCount
+//--------------
+// modelId:
+//==============
+
+increment = #idxPut(
+	modelDB, 
+	key="@modelId", 
+	competencyCount=#add(
+			a=#idxGet(modelDB, key="@modelId").decode().cget(competencyCount="").toInteger(),
+			b=#toInteger(obj="2")
+		)
+);
+
+incrementCount = #object(
+	a=#competencyErrorModelIdSet(),
+	c=#competencyErrorModelExists(), 
+	d=increment
+).cget(d="");
+
+#competencyIncremementModelCompetencyCount = incrementCount;
 
 //==============
 // DELETE Competency Model
