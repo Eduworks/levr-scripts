@@ -11,13 +11,33 @@
 // Errors
 //---------------------------
 
-throwUserExistsError = #error(msg="User Already Exists");
+throwUserExistsError = #error(
+	msg=#if(operator="@userIdExistMsg", operand="",
+			eq="User Already Exists",
+			ne="@userIdExistMsg"
+		)
+);
 
-throwUserIdNotExistError = #error(msg="User doesn't exist");
+throwUserIdNotExistError = #error(
+	msg=#if(operator="@userIdNotExistMsg", operand="",
+			eq="User doesn't exist",
+			ne="@userIdNotExistMsg",
+		)
+);
 
-throwUserIdEmptyError = #error(msg="userId required");
+throwUserIdEmptyError = #error(
+	msg=#if(operator="@userIdEmptyMsg", operand="",
+			eq="userId required",
+			ne="@userIdEmptyMsg"
+		)
+);
 
-throwPasswordEmptyError = #error(msg="password required");
+throwPasswordEmptyError = #error(
+	msg=#if(operator="@passwordEmptyMsg", operand="",
+			eq="password required",
+			ne="@passwordEmptyMsg"
+		)
+);
 
 
 
@@ -55,10 +75,19 @@ errorIfPasswordEmpty = #if(operator="@password", operand="",
 //	index
 //	userId
 //	password
+// 	(optional) userIdEmptyMsg
+//	(optional) userIdExistMsg
+//	(optional) passwordEmptyMsg
 //===========================
 
 createUserInDb = #object(
-					a=#userCreate().buildArguments(remove="currentUser", hard="true"),
+					a=#userCreate().buildArguments(
+							remove="currentUser", 
+							remove1="userIdEmptyMsg", 
+							remove2="userIdExistMsg",
+							remove3="passwordEmptyMsg", 
+							hard="true"
+						),
 					b=#userUpdateField(userId="@userId").buildArguments(remove="password", hard="true")
 				);
 
@@ -97,6 +126,8 @@ userIds = #idxKeys(indexDir="@indexDir", databaseName="@databaseName", index="@i
 //	databaseName
 //	index
 // 	userId
+// 	(optional) userIdEmptyMsg
+//	(optional) userIdExistMsg
 //===========================
 
 readUser = #object(
@@ -139,6 +170,8 @@ readAll = userIds.cforEach(op=readUser, paramName="userId");
 //	index
 // 	userId
 // 	<any fields to be added to user>
+// 	(optional) userIdEmptyMsg
+//	(optional) userIdExistMsg
 //===========================
 
 updateUserDb = #userUpdate().buildArguments(
@@ -147,6 +180,8 @@ updateUserDb = #userUpdate().buildArguments(
 	remove2="userDbName",
 	remove3="userDbIndex",
 	remove4="currentUser",
+	remove5="userIdEmptyMsg",
+	remove6="userIdExistMsg",
 	hard="true"
 );
 
@@ -167,6 +202,8 @@ userUpdate = #object(
 //	databaseName
 //	index
 // 	userId
+// 	(optional) userIdEmptyMsg
+//	(optional) userIdExistMsg
 //===========================
 
 deleteUserFromDb = #object(

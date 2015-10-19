@@ -66,7 +66,13 @@ login=#if(
 			key="@userId",
 			lastLogin=#date(_raw="true"),
 			lastIp="@ip"
-		).buildArguments(remove="password", remove1="userId"),
+		).buildArguments(
+			remove="password", 
+			remove1="userId", 
+			remove2="badPasswordMsg", 
+			remove3="userIdEmptyMsg", 
+			remove4="userIdNotExistMsg"
+		),
 		f="true"
 	).cget(f=""),
 	eq="false");

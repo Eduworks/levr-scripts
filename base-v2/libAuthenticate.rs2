@@ -24,13 +24,35 @@ increment_days=#string(str="0");
 // Errors
 //---------------------------
 
-throwSessionExpiredError = #error(msg="sessionId expired");
 
-throwBadPasswordError = #error(msg="password invalid");
 
-throwLoginRequiredError = #error(msg="sessionId invalid");
+throwSessionExpiredError = #error(
+	msg=#if(operator="@sessionExpiredMsg", operand="",
+			eq="sessionId expired",
+			ne="@sessionExpiredMsg"
+		)
+);
 
-throwSessionIdEmptyError = #error(msg="sessionId required");
+throwBadPasswordError = #error(
+	msg=#if(operator="@badPasswordMsg", operand="",
+			eq="password invalid",
+			ne="@badPasswordMsg"
+		)
+);
+
+throwLoginRequiredError = #error(
+	msg=#if(operator="@loginRequiredMsg", operand="",
+			eq="sessionId invalid",
+			ne="@loginRequiredMsg",
+		)
+);
+
+throwSessionIdEmptyError = #error(
+	msg=#if(operator="@sessionIdEmptyMsg", operand="",
+			eq="sessionId required",
+			ne="@sessionIdEmptyMsg"
+		)
+);
 
 //===========================
 // Increment Session Length
@@ -76,6 +98,8 @@ incrementSessionLength = #sessionUpdate(
 //	sessionDbIndex
 // 	sessionId
 //	noIncrement
+// 	(optional) sessionExpiredMsg
+// 	(optional) sessionIdEmptyMsg
 //===========================
 
 
@@ -115,6 +139,9 @@ validateSession = #if(operator="@sessionId", operand="",
 //	(optional) session_mins
 // 	(optional) session_hours
 //	(optional) session_days
+//	(optional) userIdEmptyMsg
+// 	(optional) badPasswordMsg
+//	(optional) userIdNotExistMsg
 //===========================
 
 userDB = {
@@ -138,7 +165,6 @@ login = #if(operator=tryLogin, operand="true",
 				),
 			sessionId= "@sessionId",
 			sessionInfo= #sessionRead(sessionDB), 
-			ids=#idxKeys(sessionDB).debug(),
 			setUserSession= #v2UserUpdate(
 					userDB, 
 					userId="@userId", 
@@ -161,7 +187,12 @@ login = #if(operator=tryLogin, operand="true",
 							_raw="true"
 						)
 				)
-		).buildArguments(remove="password", hard="true").get(userInfo="")
+		).buildArguments(
+			remove="password", 
+			remove1="badPasswordMsg",
+			remove2="userIdNotExistMsg", 
+			hard="true"
+		).get(userInfo="")
 );
 
 checkLogin = #object(
@@ -184,6 +215,8 @@ checkLogin = #object(
 //	sessionDbName
 //	sessionDbIndex
 //	sessionId
+// 	(optional) sessionExpiredMsg
+// 	(optional) sessionIdEmptyMsg
 //===========================
 getSessionUser = #if(operator=validateSession, operand="true",
 	eq= #sessionRead(
@@ -205,6 +238,9 @@ getSessionUser = #if(operator=validateSession, operand="true",
 //	sessionDbName
 //	sessionDbIndex
 //	sessionId
+// 	(optional) loginRequiredMsg
+// 	(optional) sessionExpiredMsg
+// 	(optional) sessionIdEmptyMsg
 //===========================
 
 requireLogin = #if(operator="@currentUser", operand="",
