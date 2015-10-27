@@ -464,7 +464,7 @@ increment = #idxPut(
 	key="@modelId", 
 	competencyCount=#add(
 			a=#idxGet(modelDB, key="@modelId").decode().cget(competencyCount="").toInteger(),
-			b=#toInteger(obj="2")
+			b=#toInteger(obj="1")
 		)
 );
 
