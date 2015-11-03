@@ -6,13 +6,13 @@
     <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
     <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
     <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
-    <!ENTITY structure-user "http://www.competency.services/structure-user#" >
-    <!ENTITY structure-competency "http://www.competency.services/structure-competency#" >
+    <!ENTITY structure-user "http://www.eduworks.com/competencies/structure-user#" >
+    <!ENTITY structure-competency "http://www.eduworks.com/competencies/structure-competency#" >
 ]>
 
 
-<rdf:RDF xmlns="&structure-user;"
-     xml:base="&structure-user;"
+<rdf:RDF xmlns="http://www.eduworks.com/competencies/structure-user#"
+     xml:base="http://www.eduworks.com/competencies/structure-user#"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
@@ -34,7 +34,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-user#recordCompetency -->
+    <!-- http://www.eduworks.com/competencies/structure-user#recordCompetency -->
 
     <owl:ObjectProperty rdf:about="&structure-user;recordCompetency">
         <rdfs:domain rdf:resource="&structure-user;CompetencyRecord"/>
@@ -43,7 +43,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-user#recordLevel -->
+    <!-- http://www.eduworks.com/competencies/structure-user#recordLevel -->
 
     <owl:ObjectProperty rdf:about="&structure-user;recordLevel">
         <rdfs:domain rdf:resource="&structure-user;CompetencyRecord"/>
@@ -52,7 +52,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-user#recordValidation -->
+    <!-- http://www.eduworks.com/competencies/structure-user#recordValidation -->
 
     <owl:ObjectProperty rdf:about="&structure-user;recordValidation">
         <rdfs:range rdf:resource="&structure-user;RecordValidation"/>
@@ -71,7 +71,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-user#recordCompetencyModel -->
+    <!-- http://www.eduworks.com/competencies/structure-user#recordCompetencyModel -->
 
     <owl:DatatypeProperty rdf:about="&structure-user;recordCompetencyModel">
         <rdfs:domain rdf:resource="&structure-user;CompetencyRecord"/>
@@ -80,7 +80,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-user#recordConfidence -->
+    <!-- http://www.eduworks.com/competencies/structure-user#recordConfidence -->
 
     <owl:DatatypeProperty rdf:about="&structure-user;recordConfidence">
         <rdfs:domain rdf:resource="&structure-user;CompetencyRecord"/>
@@ -89,7 +89,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-user#recordUpdated -->
+    <!-- http://www.eduworks.com/competencies/structure-user#recordUpdated -->
 
     <owl:DatatypeProperty rdf:about="&structure-user;recordUpdated">
         <rdfs:domain rdf:resource="&structure-user;CompetencyRecord"/>
@@ -98,7 +98,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-user#validationAgent -->
+    <!-- http://www.eduworks.com/competencies/structure-user#validationAgent -->
 
     <owl:DatatypeProperty rdf:about="&structure-user;validationAgent">
         <rdfs:domain rdf:resource="&structure-user;RecordValidation"/>
@@ -107,7 +107,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-user#validationConfidence -->
+    <!-- http://www.eduworks.com/competencies/structure-user#validationConfidence -->
 
     <owl:DatatypeProperty rdf:about="&structure-user;validationConfidence">
         <rdfs:domain rdf:resource="&structure-user;RecordValidation"/>
@@ -116,7 +116,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-user#validationDate -->
+    <!-- http://www.eduworks.com/competencies/structure-user#validationDate -->
 
     <owl:DatatypeProperty rdf:about="&structure-user;validationDate">
         <rdfs:domain rdf:resource="&structure-user;RecordValidation"/>
@@ -125,7 +125,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-user#validationEvidence -->
+    <!-- http://www.eduworks.com/competencies/structure-user#validationEvidence -->
 
     <owl:DatatypeProperty rdf:about="&structure-user;validationEvidence">
         <rdfs:domain rdf:resource="&structure-user;RecordValidation"/>
@@ -144,7 +144,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-user#CompetencyRecord -->
+    <!-- http://www.eduworks.com/competencies/structure-user#CompetencyRecord -->
 
     <owl:Class rdf:about="&structure-user;CompetencyRecord">
         <rdfs:subClassOf>
@@ -187,19 +187,19 @@
     
 
 
-    <!-- http://www.competency.services/structure-user#RecordValidation -->
+    <!-- http://www.eduworks.com/competencies/structure-user#RecordValidation -->
 
     <owl:Class rdf:about="&structure-user;RecordValidation"/>
     
 
 
-    <!-- http://www.competency.services/structure-competency#Competency -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#Competency -->
 
     <owl:Class rdf:about="&structure-competency;Competency"/>
     
 
 
-    <!-- http://www.competency.services/structure-competency#CompetencyLevel -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#CompetencyLevel -->
 
     <owl:Class rdf:about="&structure-competency;CompetencyLevel"/>
 </rdf:RDF>
