@@ -6,12 +6,12 @@
     <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
     <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
     <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
-    <!ENTITY structure-competency "http://www.competency.services/structure-competency#" >
+    <!ENTITY structure-competency "http://www.eduworks.com/competencies/structure-competency#" >
 ]>
 
 
-<rdf:RDF xmlns="http://www.competency.services/structure-competency#"
-     xml:base="http://www.competency.services/structure-competency"
+<rdf:RDF xmlns="http://www.eduworks.com/competencies/structure-competency#"
+     xml:base="http://www.eduworks.com/competencies/structure-competency"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
@@ -34,7 +34,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-competency#competencyLevels -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#competencyLevels -->
 
     <owl:ObjectProperty rdf:about="&structure-competency;competencyLevels">
         <rdfs:domain rdf:resource="&structure-competency;Competency"/>
@@ -44,7 +44,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-competency#desiredFor -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#desiredFor -->
 
     <owl:ObjectProperty rdf:about="&structure-competency;desiredFor">
         <rdfs:domain rdf:resource="&structure-competency;Competency"/>
@@ -55,7 +55,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-competency#desires -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#desires -->
 
     <owl:ObjectProperty rdf:about="&structure-competency;desires">
         <rdf:type rdf:resource="&owl;TransitiveProperty"/>
@@ -66,7 +66,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-competency#enabledBy -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#enabledBy -->
 
     <owl:ObjectProperty rdf:about="&structure-competency;enabledBy">
         <rdfs:domain rdf:resource="&structure-competency;Competency"/>
@@ -76,7 +76,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-competency#enables -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#enables -->
 
     <owl:ObjectProperty rdf:about="&structure-competency;enables">
         <rdfs:domain rdf:resource="&structure-competency;Competency"/>
@@ -87,7 +87,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-competency#equivalent -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#equivalent -->
 
     <owl:ObjectProperty rdf:about="&structure-competency;equivalent">
         <rdf:type rdf:resource="&owl;SymmetricProperty"/>
@@ -99,7 +99,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-competency#requiredFor -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#requiredFor -->
 
     <owl:ObjectProperty rdf:about="&structure-competency;requiredFor">
         <rdf:type rdf:resource="&owl;TransitiveProperty"/>
@@ -110,7 +110,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-competency#requires -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#requires -->
 
     <owl:ObjectProperty rdf:about="&structure-competency;requires">
         <rdf:type rdf:resource="&owl;TransitiveProperty"/>
@@ -133,7 +133,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-competency#competencyDescription -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#competencyDescription -->
 
     <owl:DatatypeProperty rdf:about="&structure-competency;competencyDescription">
         <rdfs:domain rdf:resource="&structure-competency;Competency"/>
@@ -141,7 +141,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-competency#competencyLevelDescription -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#competencyLevelDescription -->
 
     <owl:DatatypeProperty rdf:about="&structure-competency;competencyLevelDescription">
         <rdfs:subPropertyOf rdf:resource="&owl;topDataProperty"/>
@@ -149,7 +149,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-competency#competencyLevelName -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#competencyLevelName -->
 
     <owl:DatatypeProperty rdf:about="&structure-competency;competencyLevelName">
         <rdfs:subPropertyOf rdf:resource="&owl;topDataProperty"/>
@@ -157,7 +157,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-competency#competencyLevelRank -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#competencyLevelRank -->
 
     <owl:DatatypeProperty rdf:about="&structure-competency;competencyLevelRank">
         <rdfs:subPropertyOf rdf:resource="&owl;topDataProperty"/>
@@ -165,7 +165,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-competency#competencySourceIdCatalog -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#competencySourceIdCatalog -->
 
     <owl:DatatypeProperty rdf:about="&structure-competency;competencySourceIdCatalog">
         <rdfs:subPropertyOf rdf:resource="&owl;topDataProperty"/>
@@ -173,13 +173,13 @@
     
 
 
-    <!-- http://www.competency.services/structure-competency#competencySourceIdEntry -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#competencySourceIdEntry -->
 
     <owl:DatatypeProperty rdf:about="&structure-competency;competencySourceIdEntry"/>
     
 
 
-    <!-- http://www.competency.services/structure-competency#competencyTitle -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#competencyTitle -->
 
     <owl:DatatypeProperty rdf:about="&structure-competency;competencyTitle">
         <rdfs:domain rdf:resource="&structure-competency;Competency"/>
@@ -198,7 +198,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-competency#Competency -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#Competency -->
 
     <owl:Class rdf:about="&structure-competency;Competency">
         <rdfs:subClassOf rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"/>
@@ -236,13 +236,13 @@
     
 
 
-    <!-- http://www.competency.services/structure-competency#CompetencyCondition -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#CompetencyCondition -->
 
     <owl:Class rdf:about="&structure-competency;CompetencyCondition"/>
     
 
 
-    <!-- http://www.competency.services/structure-competency#CompetencyLevel -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#CompetencyLevel -->
 
     <owl:Class rdf:about="&structure-competency;CompetencyLevel">
         <rdfs:subClassOf>
@@ -290,7 +290,7 @@
     
 
 
-    <!-- http://www.competency.services/structure-competency#false -->
+    <!-- http://www.eduworks.com/competencies/structure-competency#false -->
 
     <owl:NamedIndividual rdf:about="&structure-competency;false">
         <rdf:type rdf:resource="&structure-competency;CompetencyLevel"/>
