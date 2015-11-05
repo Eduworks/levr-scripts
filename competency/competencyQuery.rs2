@@ -612,7 +612,10 @@ checkFindUsersForSet = #object(
 
 sparqlQueryParams={
 	directory = #competencyDirectory(),
-	ontologyId = #competencyUserModel(),
+	ontologyId = #if(operator="@userId", operand="",
+			ne=#competencyUserModel(),
+			eq=#competencyGetModelUri()
+		),
 	query = "@query"
 };
 
@@ -623,6 +626,6 @@ sparqlQuery = #object(
 	b=checkUserIdOrModelIdSet,
 	c=checkQuerySet,
 	d=runQuery
-).cget(c="");
+).cget(d="");
 
 #competencySPARQLQuery = sparqlQuery;
