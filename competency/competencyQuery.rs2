@@ -2,6 +2,12 @@
 //---------------Helpers
 //---------------------------------------
 
+recordDB = {
+	indexDir = #competencyUserDirectory(),
+	databaseName = "records",
+	index="@userId"
+};
+
 firstChar = #string(str="@str", op="substr", begin="0", end="1");
 
 removedFirst = #string(str="@str", op="substr", begin="1");
@@ -393,10 +399,25 @@ findUserCompetenciesParams = {
 	local = "false"
 };
 	
-getCompetencyAndModelId = #object(
+getIds = #object(
 	competencyId=#decode(obj="@result").getInObject(compId=""),
 	modelId = #decode(obj="@result").getInObject(modelId=""),
 );
+	
+getCompetencyAndModelIds = #ontologyQuery(findUserCompetenciesParams).forEach(
+																		op=getIds, 
+																		paramName="result", 
+																		aggregation="appendArray"
+																	);
+
+getIds = #object(
+			competencyId=#decode(obj="@result").getByParam(param=":recordCompetency").getIndex(index="0"),
+			modelId = #decode(obj="@result").getByParam(param=":recordCompetencyModel").getIndex(index="0"),
+		).ccall(
+			result=#idxGet(recordDB, key="@recordId")
+		);
+																	
+getCompetencyAndModelIds = #idxKeys(recordDB).cforEach(op=getIds, paramName="recordId", array="true");
 							  
 getModelId = #decode(obj="@compObj").getInObject(modelId="");
 getCompetencyId = #decode(obj="@compObj").getInObject(competencyId="");
@@ -407,19 +428,15 @@ checkAccessOrGetCompetencyArray = #if(operator=#competencyCheckUserOrAgentReadAc
 										eq=getCompetencyArray
 									);
 
-findUserCompetencies = #ontologyQuery(findUserCompetenciesParams).forEach(
-																	op=getCompetencyAndModelId, 
-																	paramName="result", 
-																	aggregation="appendArray"
-																).forEach(
-																	op=getModelId,
-																	paramName="compObj"
-																).pivot(
-																).cforEach(
-																	op=checkAccessOrGetCompetencyArray, 
-																	valueName="compArray", 
-																	paramName="modelId"
-																);
+findUserCompetencies = getCompetencyAndModelIds.forEach(
+													op=getModelId,
+													paramName="compObj"
+												).pivot(
+												).cforEach(
+													op=checkAccessOrGetCompetencyArray, 
+													valueName="compArray", 
+													paramName="modelId"
+												);
 
 checkFindCompetencies = #object(
 	a=#competencyErrorUserIdSet(),
@@ -626,6 +643,6 @@ sparqlQuery = #object(
 	b=checkUserIdOrModelIdSet,
 	c=checkQuerySet,
 	d=runQuery
-).cget(d="");
+).cget(c="");
 
 #competencySPARQLQuery = sparqlQuery;

@@ -603,29 +603,42 @@ checkUserOrAgentExists = #if(operator=checkCurrentUserSet, operand="false",
 // Competency Record
 //------------------
 
-checkRecordExists = #catch(
-							try=#ontologyReadInstance(
-									directory=#competencyDirectory(), 
-									ontologyId=#competencyUserModel(), 
-									instanceId="@recordId"
-								).string(str="true"),
-							runtime="false"
-						);
+checkRecordExists = #idxKeys(
+							indexDir = #competencyUserDirectory(),
+							databaseName = "records",
+							index="@userId"
+						).has(has="@recordId");
 						
-checkEvidenceExists = #if(operator=tryGetEvidence, operand=#add(a="{", b="}"),
+tryGetEvidence = #idxGet(	
+					indexDir = #competencyEvidenceDirectory(),
+					databaseName = #competencyEvidenceDBName(),
+					index = "0",
+					key="@evidenceId"
+				);
+
+checkEvidenceExists = #if(operator="@evidence", operand=#add(a="{", b="}"),
 							eq="false",
-							ne="true"
+							ne=#if(operator="@evidence", operand="",
+									eq="false",
+									ne="true"
+								)
+						).ccall(
+							evidence=tryGetEvidence
 						);
 #competencyCheckEvidenceExists = checkEvidenceExists;
 
-checkValidationExists = #catch(
-							try=#ontologyReadInstance(
-									directory=#competencyDirectory(),
-									ontologyId=#competencyUserModel(),
-									instanceId="@validationId"
-								).string(str="true"),
-							runtime="false"
-						);
+checkForValidation = #idxGet(
+						indexDir = #competencyUserDirectory(),
+						databaseName = "records",
+						index="@userId",
+						key="@recordId"
+					).decode().getByParam(param="validations").keySet().has(has="@validationId").toString();
+
+checkValidationExists = #idxKeys(
+							indexDir = #competencyUserDirectory(),
+							databaseName = "records",
+							index="@userId"
+						).cforEach(op=checkForValidation, paramName="recordId", array="true").has(has="true");
 
 //===================
 // Error Calls 

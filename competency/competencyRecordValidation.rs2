@@ -1,4 +1,4 @@
-  //---------------------------------------//---------------------------------------
+//---------------------------------------//---------------------------------------
 //---------------Helpers
 //==============
 
@@ -26,6 +26,11 @@ userDB = {
 	index = "0"
 };
 
+recordDB = {
+	indexDir = #competencyUserDirectory(),
+	databaseName = "records",
+	index="@userId"
+};
 
 getAgentInfo = #idxGet(agentDB, key="@agentId").toObject();
 
@@ -144,102 +149,94 @@ validationValues = #add(
 	a="{",
 	b=#if(operator="@evidenceId", operand="", 
 				eq="", 
-				ne=#add(a="':validationEvidence': '",
-						b="@evidenceId", c="',")
+				ne=#add(a="':validationEvidence': ['",
+						b="@evidenceId", c="'],")
 		),
-	c="':validationConfidence':",
+	c="':validationConfidence':[",
 	d="@confidence",
-	e=", ':validationDate': '", 
+	e="], ':validationDate': ['", 
 	f=#competencyNow(),
-	g="', ':validationAgent':",
+	g="'], ':validationAgent':[",
 	h="@agentId",
-	i="}"
+	i="]}"
 );
 
-createValidationParams = {
-	directory=#competencyDirectory(),
-	ontologyId=#competencyUserModel(),
-	classId="RecordValidation",
-	vals=validationValues
-};
+updateValidationDb = #object().putInObject(
+									dest="@validationId",
+									item=#decode(obj="@record").putInObject(
+												dest="validations",
+												item=#decode(obj="@record").cget(validations="").putInObject(
+																									dest="@validationId",
+																									item=validationValues.decode()
+																								)
+											).putInObject(
+												dest=":recordValidation",
+												item=#if(operator="@recordValidationArray", operand="",
+															ne=#toArray(obj="@recordValidationArray").append(a="@validationId"),
+															eq=#toArray(obj=#add(a="[",b="]")).append(a="@validationId")
+														)
+											).idxSet(recordDB, key="@recordId").cget(validations="").getByParam(param="@validationId")
+								);
 
-recordValidations = #ontologyReadInstance(directory=#competencyDirectory(), ontologyId=#competencyUserModel(), instanceId="@recordId").getByParam(param="@recordId").getByParam(param=":recordValidation");
+createValidation = updateValidationDb.ccall(
+										record=#idxGet(recordDB, key="@recordId"),
+										recordValidationArray=#idxGet(recordDB, key="@recordId").decode().getByParam(param=":recordValidation"),
+										validationId=#add(a=":", b=#generateUUID())
+									);
+									
+checkValues = #if(operator=#decode(obj="@validationObj").getByParam(param=":validationAgent").getIndex(index="0"), operand="@agentId",
+					eq=#if(operator=#date(input=#decode(obj="@validationObj").getByParam(param=":validationDate").getIndex(index="0"), dateFormat="yyyy-MM-dd'T'hh:mm:ss", _raw="true"),
+							operand=#date(input=#add(a=#date(input=#competencyNow(), dateFormat="yyyy-MM-dd"), b="T00:00:00"), dateFormat="yyyy-MM-dd'T'hh:mm:ss", _raw="true"),
+							ge=#if(operator=#date(input=#decode(obj="@validationObj").getByParam(param=":validationDate").getIndex(index="0"), dateFormat="yyyy-MM-dd'T'hh:mm:ss", _raw="true"),
+									operand=#date(input=#add(a=#date(input=#competencyNow(), dateFormat="yyyy-MM-dd"), b="T23:59:59"), dateFormat="yyyy-MM-dd'T'hh:mm:ss", _raw="true"),
+									le="@validationId",
+									gt="false"
+								),
+							lt="false"
+						),
+					ne="false"
+				);
 
-addValidationValues = #ontologyReadInstance(
-	directory=#competencyDirectory(), 
-	ontologyId=#competencyUserModel(), 
-	instanceId="@recordId"
-).getByParam(param="@recordId").putInObject(
-	dest=":recordValidation", 
-	item=recordValidations.append(a="@validationId")
-).putInObject(
-	dest=":recordUpdated",
-	item=#toArray(obj=#competencyNow())
-).displayJson(_collapse="true");
- 
-addValidationToRecord = #ontologyUpdateInstance(directory=#competencyDirectory(), ontologyId=#competencyUserModel(), instanceId="@recordId", vals=addValidationValues);
-
-getKeyAndAddToRecord = #decode(obj="@values").keySet().getIndex(index="0").toParameter(op=addValidationToRecord, paramName="validationId");
-
-displayObj = #object(
-	a=#decode(obj="@values"), 
-	b=#call(obj=getKeyAndAddToRecord, values="@values"),
-	c=#execute(service="competencyUpdateRecordConfidence", userId="@userId", recordId="@recordId", confidence="@confidence")
-).get(a="");
-createValidation = #ontologyCreateInstance(createValidationParams).toParameter(op=displayObj, paramName="values");
-
-findValidationQuery =  #add(
-	a="PREFIX comp: <", 
-	b=#competencyStructureURI(),
-	c="#>
-	PREFIX record: <", d=#competencyUserStructureURI(), e="#>
-	PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
-	SELECT ?id
-	WHERE { ?recordId record:recordValidation ?id .
-			?id record:validationAgent '",
-	f="@agentId",
-	g="' . ",
-	h=" ?id record:validationDate ?date . ",
-	i= "FILTER( ",
-	j= "strends( str(?recordId), '",
-	k= simpleId.call(str="@recordId"),
-	l= "' )",
-	m= " && ?date >= '",
-	n= #add(a=#date(input=#competencyNow(), dateFormat="yyyy-MM-dd"), b="T00:00:00"),
-	o= "'^^xsd:dateTime && ?date <= '",
-	p= #add(a=#date(input=#competencyNow(), dateFormat="yyyy-MM-dd"), b="T23:59:59"),
-	q= "'^^xsd:dateTime ) }"
-);
-
-findValidation = #ontologyQuery(createValidationParams, query=findValidationQuery);
+findValidation = #if(operator="@validations", operand="",
+						ne=#if(operator=#toObject(obj="@validations").count(), operand="0",
+								ne=#decode(obj="@validations").cforEach(op=checkValues, paramName="validationId", valueName="validationObj", array="true").removeFromArray(item="false"),
+								eq=#toArray(obj=#add(a="[",b="]"))
+							),
+						eq=#toArray(obj=#add(a="[",b="]"))
+					).ccall(
+						validations=#idxGet(recordDB, key="@recordId").decode().cget(validations="")
+					);
 
 createObject = #object(count=#toArray(obj="@result").count(), result=#decode(obj="@result")); 
 validationCountObject = findValidation.toParameter(op=createObject, paramName="result");
 
-validationEvidences = #ontologyReadInstance(directory=#competencyDirectory(), ontologyId=#competencyUserModel(), instanceId="@validationId").getByParam(param="@validationId").getByParam(param=":validationEvidence");
+validationEvidences = #decode(obj="@validation").getByParam(param=":validationEvidence");
 
-addEvidenceValues = #ontologyReadInstance(
-	directory=#competencyDirectory(), 
-	ontologyId=#competencyUserModel(), 
-	instanceId="@validationId"
-).getByParam(
-	param="@validationId"
-).putInObject(
-	dest=":validationEvidence", 
-	item=validationEvidences.append(a="@evidenceId")
-).displayJson(_collapse="true");
- 
-addEvidenceToValidation = #ontologyUpdateInstance(
-	directory=#competencyDirectory(), 
-	ontologyId=#competencyUserModel(), 
-	instanceId="@validationId", 
-	vals=addEvidenceValues
-).execute(
-	service="competencyUpdateRecordValidationConfidence", 
-	userId="@userId",
-	validationId="@validationId", 
-	confidence="@confidence"
-);
+updateDb = #decode(obj="@recordObj").putInObject(
+										dest="validations",
+										item=#decode(obj="@validations").putInObject(
+																			dest="@validationId",
+																			item=#decode(obj="@validation").putInObject(
+																												dest=":validationEvidence",
+																												item=validationEvidences.append(a="@evidenceId").removeDuplicates()
+																											)
+																		)
+									).idxSet(recordDB, key="@recordId");
+
+getValuesAndUpdateDb = updateDb.ccall(
+									validations=#decode(obj="@recordObj").cget(validations=""),
+									validation=#decode(obj="@recordObj").cget(validations="").getByParam(param="@validationId"),
+									recordValidationArray=#decode(obj="@recordObj").getByParam(param=":recordValidation")
+								);
+
+addEvidenceToValidation = getValuesAndUpdateDb.ccall(
+										recordObj=#idxGet(recordDB, key="@recordId"),
+									).execute(
+										service="competencyUpdateRecordValidationConfidence", 
+										userId="@userId",
+										validationId="@validationId", 
+										confidence="@confidence"
+									);
 
 getValidationId = #decode(obj="@countObj").get(result="").toArray().getIndex(index="0").get(id="");
 addEvidence = getValidationId.toParameter(
@@ -249,8 +246,8 @@ addEvidence = getValidationId.toParameter(
 
 createOrAdd = #if(operator=#get(obj=#decode(obj="@countObj"), count=""), operand="1", ge=addEvidence, lt=createValidation);
 
-createOrAddToValidation = #call(obj=createOrAdd, countObj=validationCountObject);
-createEvidenceThenValidation = #call(obj=createOrAddToValidation, evidenceId=checkCreateEvidence);
+createOrAddToValidation = createOrAdd.ccall(countObj=validationCountObject);
+createEvidenceThenValidation = createOrAddToValidation.ccall(evidenceId=checkCreateEvidence);
 
 checkCreateValidation = #object(
 	a=#competencyErrorUserIdSet(),
@@ -261,7 +258,6 @@ checkCreateValidation = #object(
 	f=#competencyReadRecord(),
 	g=#competencyErrorConfidenceSet(),
 	h=#competencyErrorConfidenceValue(),
-	
 	i=createEvidenceThenValidation
 ).get(i="");
 
@@ -282,9 +278,12 @@ checkCreateValidation = #object(
 // confidence:
 //==============  
 
-returnValidation = #competencyReadRecordValidation(userId="@userId", validationId=#get(obj=#decode(obj="@countObj"), result="").getIndex(index="0").get(id=""));
+returnValidation = #competencyReadRecordValidation(userId="@userId", validationId=#get(obj=#decode(obj="@countObj"), result="").getIndex(index="0"));
 
-createIfNotExists = #if(operator=#get(obj=#decode(obj="@countObj"), count=""), operand="1", lt=createValidation, ge=returnValidation);
+createIfNotExists = #if(operator=#get(obj=#decode(obj="@countObj"), count=""), operand="1", 
+	lt=createValidation, 
+	ge=returnValidation
+);
 
 checkExistsCreateValidation = #call(obj=createIfNotExists, countObj=validationCountObject);
 
@@ -297,7 +296,8 @@ checkCreateValidationNoEvidence = #object(
 	f=#competencyReadRecord(),
 	g=#competencyErrorConfidenceSet(),
 	h=#competencyErrorConfidenceValue(),
-	i=checkExistsCreateValidation
+	i=checkExistsCreateValidation,
+	j=#competencyUpdateRecordConfidence(),
 ).get(i="");
 									
 #competencyCreateRecordValidationNoEvidence = checkCreateValidationNoEvidence;
@@ -341,10 +341,11 @@ checkCreateValidationWithIds = #object(
 	e=#competencyErrorRecordExists(),
 	f=#competencyReadRecord(),
 	g=#competencyErrorConfidenceSet(),
-	h=#competencyErrorConfidenceValue(),			
-	i=checkExistsCreateValidationAndAddEvidences,
-	j=#competencyUpdateRecordConfidence(),
-).get(i="");
+	h=#competencyErrorConfidenceValue(),		
+	i=#toArray(obj="@evidenceIds").cforEach(op=#competencyErrorEvidenceExists(), paramName="evidenceId", rethrow="true", threaded="false"),	
+	j=checkExistsCreateValidationAndAddEvidences,
+	k=#competencyUpdateRecordConfidence(),
+).get(j="");
 
 #competencyCreateRecordValidationWithEvidenceIds = checkCreateValidationWithIds;
 
@@ -383,20 +384,24 @@ createUnattached = #object(
 // validationId:
 //==============
 
-readValidationParams = {
-	directory = #competencyDirectory(),
-	ontologyId = #competencyUserModel(),
-	instanceId = "@validationId"
-};
+checkValidations = #if(operator=#decode(obj="@recordObj").getByParam(param="validations").keySet().has(has="@validationId"), operand="true",
+						eq=#decode(obj="@recordObj").cget(validations="").getByParam(param="@validationId"),
+						ne="false"
+					).ccall(
+						recordObj=#idxGet(recordDB, key="@recordId")
+					);
 
-getValidation = #ontologyReadInstance(readValidationParams);
+getValidation = #idxKeys(recordDB).cforEach(op=checkValidations, paramName="recordId", array="true").removeFromArray(item="false").getIndex(index="0");
 
 checkGetValidation = #object(
 	a=#competencyErrorUserIdSet(),
 	b=#competencyErrorUserExists(),
 	c=#competencyErrorValidationIdSet(),
 	d=#competencyErrorValidationExists(),
-	e=getValidation
+	e=#object().putInObject(
+					dest="@validationId",
+					item=getValidation
+				)
 ).get(e="");
 						
 #competencyReadRecordValidation = checkGetValidation;
@@ -408,15 +413,6 @@ checkGetValidation = #object(
 //--------------
 // userId:
 //==============
-
-
-readAllValidationsParams = {
-	directory = #competencyDirectory(),
-	ontologyId = #competencyUserModel(),
-	classId="RecordValidation"
-};
-
-getValidations = #ontologyReadClassInstances(readAllValidationsParams);
 
 readAllValidations = #object(
 						a=#competencyErrorUserIdSet(),
@@ -443,12 +439,30 @@ newConfidence = #paramExists(paramName="confidence", true="@confidence", false=d
 
 updateConfidenceValues = #competencyReadRecordValidation().getByParam(param="@validationId").putInObject(dest=":validationConfidence", item=#toArray(obj=newConfidence)).displayJson(_collapse="true");
 
-updateValidationConfidence = #ontologyUpdateInstance(
-	directory=#competencyDirectory(), 
-	ontologyId=#competencyUserModel(), 
-	instanceId="@validationId", 
-	vals=updateConfidenceValues
-);
+updateValidationValues = #decode(obj="@recordObj").putInObject(
+														dest="validations",
+														item=#decode(obj="@validations").putInObject(
+																							dest="@validationId",
+																							item=#decode(obj="@validation").putInObject(
+																																dest=":validationConfidence",
+																																item=#toArray(obj=#add(a="[",b="]")).append(a=#toDouble(obj="@confidence"))
+																															)
+																						)
+													).idxSet(recordDB, key="@recordId");
+
+updateValidationConfidenceDb = updateValidationValues.ccall(
+														validations=#decode(obj="@recordObj").cget(validations=""),
+														validation=#decode(obj="@recordObj").cget(validations="").getByParam(param="@validationId")
+													);
+
+updateValidationConfidence = updateValidationConfidenceDb.ccall(
+															recordObj=#idxGet(recordDB, key="@recordId")
+														);
+
+getRecordId = #if(operator=#idxGet(recordDB, key="@recordId").decode().getByParam(param=":recordValidation").toArray().has(has="@validationId"), operand="true",
+					eq="@recordId",
+					ne="false"
+				);
 
 checkUpdateValidationConfidence = #object(
 										a=#competencyErrorUserOrAgentExists(),
@@ -456,8 +470,13 @@ checkUpdateValidationConfidence = #object(
 										c=#competencyErrorUserExists(),
 										d=#competencyErrorValidationIdSet(),
 										e=#competencyErrorValidationExists(),
-										f=updateValidationConfidence,
-										g=getValidation.getByParam(param="@validationId"),
+										f=updateValidationConfidence.ccall(
+																		recordId=#if(operator="@recordId", operand="",
+																						ne="@recordId",
+																						eq=#idxKeys(recordDB).cforEach(op=getRecordId, paramName="recordId", array="true").removeFromArray(item="false").getIndex(index="0")
+																					)
+																	),
+										g=getValidation,
 									).cget(g="");
 
 #competencyUpdateRecordValidationConfidence = checkUpdateValidationConfidence;
@@ -471,31 +490,40 @@ checkUpdateValidationConfidence = #object(
 // validationId:
 //==============
 
-getValidationEvidences = #ontologyReadInstance(
-	directory=#competencyDirectory(), 
-	ontologyId=#competencyUserModel(), 
-	instanceId="@validationId"
-).getByParam(param="@validationId");
-
-valEv = getValidationEvidences.displayJson(_collapse="true");
-/test/valEv = valEv;
-
-callDeleteEvidence = #execute(service="competencyDeleteEvidence", userId="@userId", evidenceId="@evidenceId", leaveReferences="true");
+callDeleteEvidence = #execute(service="competencyDeleteEvidence", userId="@userId", evidenceId=#debug(obj="@evidenceId"), leaveReferences="true");
 
 deleteEvidencesIfExist = #if(
 	operator=#decode(obj="@validation").has(has=":validationEvidence"), 
-	operand="true", 
+	operand=#true(), 
 	eq=#decode(obj="@validation").getByParam(param=":validationEvidence").forEach(op=callDeleteEvidence, paramName="evidenceId"),
-	eq=""
+	ne=""
 );
 
 deleteEvidences = getValidation.toParameter(op=deleteEvidencesIfExist, paramName="validation"); 
 
-removeValidation = #ontologyDeleteInstance(
-	directory=#competencyDirectory(), 
-	ontologyId=#competencyUserModel(), 
-	instanceId="@validationId"
-);
+
+deleteValidationFromDb = #decode(obj="@record").putInObject(
+	dest="validations",
+	item=#decode(obj="@record").cget(validations="").removeByParam(
+														param="@validationId"
+													)
+).putInObject(
+	dest=":recordValidation",
+	item=#decode(obj="@record").getByParam(param=":recordValidation").toArray().removeFromArray(item="@validationId")
+).idxSet(recordDB, key="@recordId");
+
+removeValidation = deleteValidationFromDb.ccall(
+										record=#idxGet(recordDB, key="@recordId"),
+									);
+
+checkValidations = #if(operator=#decode(obj="@recordObj").getByParam(param="validations").keySet().has(has="@validationId"), operand="true",
+						eq="@recordId",
+						ne="false"
+					).ccall(
+						recordObj=#idxGet(recordDB, key="@recordId")
+					);
+
+getValidationRecordId = #idxKeys(recordDB).cforEach(op=checkValidations, paramName="recordId", array="true").removeFromArray(item="false").getIndex(index="0");
 
 deleteValidation = #object(
 	a=#competencyErrorUserIdSet(),
@@ -503,7 +531,9 @@ deleteValidation = #object(
 	c=#competencyErrorValidationIdSet(),
 	d=#competencyErrorValidationExists(),
 	e=deleteEvidences,
-	f=removeValidation
+	f=removeValidation.ccall(
+			recordId=getValidationRecordId
+		)
 ).get(f="");
 							
 #competencyDeleteRecordValidation = deleteValidation; 
@@ -650,9 +680,16 @@ checkDeleteAgent = #object(
 // evidenceFileName:  [One of]
 //==============
 
+getRecordId = #if(operator=#idxGet(recordDB, key="@recordId").decode().getByParam(param=":recordValidation").toArray().has(has="@validationId"), operand="true",
+					eq="@recordId",
+					ne="false"
+				);
+
 addNewEvidence = #object(
 	a="@evidenceId",
-	b=addEvidenceToValidation
+	b=addEvidenceToValidation.ccall(
+								recordId=#idxKeys(recordDB).cforEach(op=getRecordId, paramName="recordId", array="true").removeFromArray(item="false").getIndex(index="0")
+							)
 ).get(a="");
 
 getEvidence = #idxGet(evidenceDB,key="@evidenceId").toObject();
@@ -668,7 +705,7 @@ checkAddEvidence = #object(
 ).toParameter(
 	op=addNewEvidence, 
 	paramName="evidenceId"
-).toParameter(
+).debug().toParameter(
 	op=getEvidence,
 	paramName="evidenceId"
 );
@@ -765,31 +802,6 @@ checkUpdateEvidence = #object(
 // evidenceId:
 // leaveReferences:
 //==============
-
-getEvidences = #ontologyReadInstance(directory=#competencyDirectory(), ontologyId=#competencyUserModel(), instanceId="@validationId").getByParam(param="@validationId").getByParam(param=":validationEvidence");
-
-updatedEvidences = getEvidences.removeFromArray(item="@evidenceId");
-
-removeReferencesValues = #object().putInObject(dest=":validationEvidence", item=updatedEvidences).displayJson(_collapse="true"); 
-
-removeReference = #ontologyUpdateInstance(directory=#competencyDirectory(), ontologyId=#competencyUserModel(), instanceId="@validationId", vals=removeReferencesValues);
-
-removeEvidence = #decode(obj="@validationIdObj").get(id="").toParameter(op=removeReference, paramName="validationId");
-
-findEvidenceValidationsQuery = #add(
-	a="PREFIX comp: <",
-	b=#competencyStructureURI(),
-	c="#>
-	PREFIX record: <",
-	d=#competencyUserStructureURI(),
-	e="#>
-	SELECT ?id
-	WHERE { ?id record:validationEvidence '",
-	f="@evidenceId",
-	g="' . }"
-);
-
-findValidations = #ontologyQuery(directory=#competencyDirectory(), ontologyId=#competencyUserModel(), query=findEvidenceValidationsQuery);
 
 removeFromValidations = findValidations.forEach(op=removeEvidence, paramName="validationIdObj");
 

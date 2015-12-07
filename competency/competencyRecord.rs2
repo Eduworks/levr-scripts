@@ -15,6 +15,12 @@ userDB = {
 	index = "0"
 };
 
+recordDB = {
+	indexDir = #competencyUserDirectory(),
+	databaseName = "records",
+	index="@userId"
+};
+
 firstChar = #string(str="@str", op="substr", begin="0", end="1");
 
 removedFirst = #string(str="@str", op="substr", begin="1");
@@ -49,48 +55,34 @@ recordValues = #add(
 );
 					
 
-createRecordParams = {
-	directory = #competencyDirectory(),
-	ontologyId = #competencyUserModel(),
-	classId = "CompetencyRecord",
-	vals = recordValues
-};
-
-findExistingQuery = #add(
-	a="PREFIX comp: <",
-	b=#competencyStructureURI(),
-	c="#>
-		PREFIX record: <",
-	d=#competencyUserStructureURI(),
-	e="#>
-		SELECT ?id
-		WHERE { ?id record:recordCompetency ?comp .
-				?id record:recordLevel ?level .
-				FILTER( strends( str(?comp), '",
-	f= simpleId.call(str="@competencyId"),
-	g= "' ) && strends( str(?level), '",
-	h= simpleId.call(str="@levelId"),
-	i= "' ) ) }"
-);
-
-findExistingParams = {
-	directory = #competencyDirectory(),
-	ontologyId = #competencyUserModel(),
-	query = findExistingQuery
-};
-
-findExisting = #ontologyQuery(findExistingParams);
 countExisting = #toArray(obj="@result").count();
 
-readRecordForQuery = #execute(service="competencyReadRecord", userId="@userId", recordId="@instanceId");
-readExisting = #toArray(obj="@result").getIndex(index="0").valueSet().getIndex(index="0").toParameter(op=readRecordForQuery, paramName="instanceId");
+createRecord = #object().putInObject(
+							dest="@recordId",
+							item=#idxSet(recordDB, key="@recordId", obj=#toObject(obj=recordValues))
+						).ccall(
+							recordId=#add(a=":", b=#generateUUID())
+						);
 
-createOrRead = #if(
-	operator=countExisting, 
-	operand="0",
-	eq=#ontologyCreateInstance(createRecordParams),
-	ne=readExisting
-);
+createOrRead = #if(operator=#toObject(obj="@result").count(), operand="0",
+					eq=createRecord,
+					ne=#decode(obj="@result")
+				);
+
+checkForRecord = #if(operator=#decode(obj="@recordObj").getByParam(param=":recordCompetency"), operand="@competencyId",
+						eq=#if(operator=#decode(obj="@recordObj").getByParam(param=":recordCompetencyModel"), operand="@modelId",
+								eq=#if(operator=#decode(obj="@recordObj").getByParam(param=":recordLevel"), operand="@levelId",
+										eq=#decode(obj="@recordObj"),
+										ne="false",
+									),
+								ne="false"
+							),
+						ne="false"
+					).ccall(
+						recordObj=#idxGet(recordDB, key="@recordId")
+					);
+
+findExisting = #idxKeys(recordDB).cforEach(op=checkRecord, paramName="recordId").remove(item="false");
 
 findAndCreate = findExisting.toParameter(op=createOrRead, paramName="result");
 
@@ -104,9 +96,10 @@ createRecord = #object(
 	g=#competencyErrorCompetencyExists(),
 	h=#competencyErrorLevelExists(),
 	i=#competencyErrorLevelNotForCompetency(),
-	j=#ontologyAddImport(directory = #competencyDirectory(), ontologyId=#competencyUserModel(), importId=#competencyGetModelUri()),
 	k=findAndCreate
 ).cget(k="");
+//j=#ontologyAddImport(directory = #competencyDirectory(), ontologyId=#competencyUserModel(), importId=#competencyGetModelUri()),
+
 
 #competencyCreateRecord = createRecord;
 
@@ -120,14 +113,10 @@ createRecord = #object(
 // recordId:
 //==============
 
-
-readRecordParams = {
-	directory = #competencyDirectory(),
-	ontologyId = #competencyUserModel(),
-	instanceId="@recordId"
-};
-
-readRecord = #ontologyReadInstance(readRecordParams);
+readRecord = #object().putInObject(
+							dest="@recordId",
+							item=#idxGet(recordDB, key="@recordId").decode()
+						);
 
 checkAccessRead = #object(
 						a=#decode(obj="@record").getByParam(param="@recordId").getByParam(param=":recordCompetencyModel").toArray().getIndex(index="0").toParameter(op=#competencyErrorUserOrAgentReadAccess(), paramName="modelId"),
@@ -153,13 +142,9 @@ checkThenRead = #object(
 // userId:
 //==============
 
-readAllRecordParams = {
-	directory = #competencyDirectory(),
-	ontologyId = #competencyUserModel(),
-	classId="CompetencyRecord"
-};
+getRecord = readRecord.getByParam(param="@recordId");
 
-getRecords = #ontologyReadClassInstances(readAllRecordParams);
+getRecords = #idxKeys(recordDB).cforEach(op=getRecord, paramName="recordId");
 
 checkAccess = #if(operator=#competencyCheckUserOrAgentReadAccess(modelId=#decode(obj="@record").getByParam(param=":recordCompetencyModel").toArray().getIndex(index="0")), operand="true",
 						eq=#decode(obj="@record"),
@@ -184,33 +169,20 @@ checkThenReadRecords = #object(
 // recordId:
 // confidence:
 //==============
-
-updateRecordVals = #ontologyReadInstance(
-	directory=#competencyDirectory(), 
-	ontologyId=#competencyUserModel(), 
-	instanceId="@recordId"
-).getByParam(
-	param="@recordId"
-).putInObject(
+						
+updateRecVals = #idxGet(recordDB, key="@recordId").putInObject(
 	dest=":recordConfidence", 
 	item=#toArray(obj="@confidence"),
 ).putInObject(
 	dest=":recordUpdated",
 	item=#toArray(obj=#competencyNow())
-).displayJson(_collapse="true");   
+);
 
-updateRecordParams = {
-	directory = #competencyDirectory(),
-	ontologyId = #competencyUserModel(),
-	instanceId = "@recordId",
-	vals = updateRecordVals
-};
-
-checkRecordExists = #ontologyReadInstance(updateRecordParams);
-
+updateRec = #idxSet(recordDB, key="@recordId", obj=updateRecVals);
+						
 updateRecord = #object().putInObject(
 							dest="@recordId",
-							item=#ontologyUpdateInstance(updateRecordParams)
+							item=updateRec
 						);
 
 checkUpdateRecord = #object(
@@ -235,13 +207,7 @@ checkUpdateRecord = #object(
 // recordId:
 //==============
 
-deleteRecordParams = {
-	directory = #competencyDirectory(),
-	ontologyId = #competencyUserModel(),
-	instanceId = "@recordId"
-};
-
-deleteRecord = #ontologyDeleteInstance(deleteRecordParams);
+deleteRecord = #idxDelete(recordDB, key="@recordId");
 
 checkDeleteRecord = #object(
 						a=#competencyErrorUserIdSet(),
