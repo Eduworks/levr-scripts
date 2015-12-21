@@ -127,10 +127,11 @@ defaultLevels = #string(str=":true").toArray().append(a=":false");
 //==============
 
 now = #add(
-	a=#date(dateFormat="yyyy-MM-dd"),
+	a=#date(dateFormat="yyyy-MM-dd").debug(),
 	b="T",
-	c=#date(dateFormat="HH:mm:ss")
-);
+	c=#date(dateFormat="HH:mm:ss").debug(),
+	_string="true"
+).debug();
 		
 #competencyNow = now;
 
