@@ -232,7 +232,7 @@ checkDeleteRecord = #object(
 
 readUserCompParams = {
 	directory = #competencyDirectory(),
-	ontologyId = #competencyUserModel(),
+	ontologyId = "@modelId",
 	instanceId = "@competencyId"
 };
 
