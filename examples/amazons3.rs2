@@ -1,0 +1,81 @@
+s3AccessKey=#string(str="");
+s3AccessKey=#if(operator=s3AccessKey,operand="",eq=#error(code="500",msg="S3 Access Key not defined."),ne=s3AccessKey);
+s3Secret=#string(str="");
+s3Secret=#if(operator=s3Secret,operand="",eq=#error(code="500",msg="S3 Secret not defined."),ne=s3Secret);
+
+nl=#byteAsString(obj="0a");
+
+canonicalizedAmzHeaders=#object(
+	a=""
+).cget(b="");
+
+canonicalizedResource=#add(
+	a="/",
+	b="@bucket",
+	c="/",
+	d="@remotePath"
+);
+
+stringToSign=#add(
+	a="@httpVerb",
+	b=nl,
+	c="@contentMd5",
+	d=nl,
+	e="@mimeType",
+	f=nl,
+	g=#date(dateFormat="EEE, dd MMM yyyy HH:mm:ss zzz"),
+	h=nl,
+	i=canonicalizedAmzHeaders,
+	j=canonicalizedResource	
+).sha1(key=s3Secret);
+
+authorization=#add(
+	a="AWS",
+	b=" ",
+	c=s3AccessKey,
+	d=":",
+	e=stringToSign
+);
+
+path=#add(
+	a="http://",
+	aa="@bucket",
+	b=".s3.amazonaws.com/",
+	c="@remotePath"
+);
+
+s3Put=#fileFromDatastream(name="@obj").setMimetype(mime="@mimeType").httpPut(
+	url=path,
+	date=#date(dateFormat="EEE, dd MMM yyyy HH:mm:ss zzz"),
+	Content-Type="@mimeType",
+	Authorization=authorization
+).call(
+	httpVerb="PUT",
+	remotePath=#fileFromDatastream(name="@obj").filename()
+);
+
+#s3PutFile=s3Put;
+
+s3Get=#httpGet(
+	file="true",
+	Authorization=authorization,
+	date=#date(dateFormat="EEE, dd MMM yyyy HH:mm:ss zzz"),
+	obj=path
+).setFilename(name="@path").call(
+	httpVerb="GET",
+	remotePath="@path"
+);
+#s3GetFile=s3Get;
+
+test=#object(
+	a=#fileLoad(path="").s3PutFile(	
+		mimeType="application/pdf",
+		bucket=""
+	),
+	b=#s3GetFile(
+		path="@name",
+		bucket=""
+	).setMimetype("application/pdf").call(name="")
+).cget(b="");
+
+/s3/test=test;
