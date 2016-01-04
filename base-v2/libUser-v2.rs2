@@ -46,7 +46,7 @@ errorIfUserIdExists = #if(operator=#execute(service="v2UserIds").cforEach(op="")
 );
 
 errorIfUserIdNotExist = #if(operator=#execute(service="v2UserIds").cforEach(op="").has(has="@userId"), operand=#true(),
-	ne=throwUserIdNotExistError
+	ne=throwUserIdNotExistError,
 );
 
 errorIfUserIdEmpty = #if(operator="@userId", operand="",
