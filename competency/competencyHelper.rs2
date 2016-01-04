@@ -222,9 +222,9 @@ prepStructureFiles = #add(a="[",b="]").toArray().append(
 												).cforEach(op=prepFile, paramName="fileName", threaded="false");  
 
 setup = #object(  
-	a_uri = #ontologySetUriPrefix(uri=#competencyDefaultURI()),
-	b_directory=#competencyDirectory(),
-	c_structures=#if(operator=#toArray(obj="@uris").has(has=#competencyStructureURI()), operand="true",
+	a_uri = #debug(obj="Setting Competency URI").ontologySetUriPrefix(uri=#competencyDefaultURI()),
+	b_directory=#debug(obj="Checking Competency Directory").competencyDirectory(),
+	c_structures=#debug(obj="Building Structure Models").if(operator=#toArray(obj="@uris").has(has=#competencyStructureURI()), operand="true",
 						ne=#object(
 								a=prepStructureFiles,
 								b=#ontologyTDBLoader(
@@ -234,9 +234,12 @@ setup = #object(
 								)
 							).cget(a=""),
 					).ccall(uris=#ontologyListOntologies(directory=#competencyDirectory())),
-	d_default=#competencyCreateDefaultModel(),
-	e_users=#decode(obj=checkUserUris),
-	f_guestUser=createGuestIfSet,
+	d_default=#debug(obj="Creating Default Model").competencyCreateDefaultModel(),
+	e_users=#debug(obj="Cleaning Users").decode(obj=checkUserUris),
+	f_guestUser=#object(
+					a=#debug(obj="Creating Guest if Set"),
+					b=createGuestIfSet,
+				).cget(b="")
 );      
     
 #competencySetupAutoExecute = setup;
