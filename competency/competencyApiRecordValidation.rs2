@@ -343,7 +343,15 @@ addEvidence = #competencyAddEvidence(
 	evidenceURI=postedEvidenceURI,
 	evidenceString=postedEvidenceString,
 	evidenceFileName=postedEvidenceFileName
+);
+
+addEvidence =  #competencySessionUser(
+	sessionId=postedSessionId
+).toParameter(
+	op=addEvidence,
+	paramName="currentUser"
 ).displayJson(_collapse="true");
+
 /competency/record/validation/evidence/add = addEvidence;
 
 

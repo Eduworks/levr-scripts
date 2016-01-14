@@ -60,7 +60,13 @@ generateAndCheckUUID = generateModelName.toParameter(op=checkAndRegen, paramName
 
 //	2) Create Ontology (Use UUID as ontologyId)
 createOntology = #ontologyCreate(createModelParams);
-createOntWithUUID = generateAndCheckUUID.toParameter(op=createOntology, paramName="modelId").toObject();
+createOntWithUUID = #if(operator="@modelId", operand="",
+	eq=generateAndCheckUUID,
+	ne=#if(operator=ids.has(has="@modelId"), operand="true",
+			eq=#error(msg="Model already Exists with specified <modelId>"),
+			ne="@modelId"
+		),
+).toParameter(op=createOntology, paramName="modelId").toObject();
 
 //	3) Add Info to Model DB (key:IRI , obj: {ontologyId/filename, directory, ontologyName, ontologyDescription?, users (array, if empty/null anyone can view), admin (array, if empty anyone can edit)})
 createModelInDB = #idxSet(modelDB, key=#get(obj="@modelInfo", ontologyId=""), obj="@modelInfo");

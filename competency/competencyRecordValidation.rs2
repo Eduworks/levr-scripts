@@ -155,7 +155,15 @@ validationValues = #add(
 	c="':validationConfidence':[",
 	d="@confidence",
 	e="], ':validationDate': ['", 
-	f=#competencyNow(),
+	f=#if(operator="@validationDate", operand="",
+			eq=#competencyNow(),
+			ne=#add(
+					a=#date(dateFormat="yyyy-MM-dd", input="@validationDate"),
+					b="T",
+					c=#date(dateFormat="HH:mm:ss"),
+					_string="true"
+				)
+		),
 	g="'], ':validationAgent':[",
 	h="@agentId",
 	i="]}"
@@ -602,6 +610,16 @@ checkCreateAgent = #object(
 
 #competencyCreateValidationAgent = checkCreateAgent;
 
+
+//==============
+// Read Competency Validation Agent
+//--------------
+// #competencyValidationAgentIds
+//==============
+
+agentKeys = #idxKeys(agentDB).toArray();
+
+#competencyValidationAgentIds = agentKeys;
 
 //==============
 // Read Competency Validation Agent

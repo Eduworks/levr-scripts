@@ -15,113 +15,113 @@ findAgentCount = #count(obj=#idxGet(indexDir = #competencyAgentDirectory(), data
 // Parameter Set Messages 
 //===================
 
-msgModelIdSet = #object(code="empty", msg="<modelId> parameter cannot be empty");
+msgModelIdSet = #object(code="empty", msg="<modelId> parameter cannot be empty").toString();
 
-msgModelNameSet = #object(code="empty", msg="<modelName> parameter cannot be empty");
+msgModelNameSet = #object(code="empty", msg="<modelName> parameter cannot be empty").toString();
 
-msgUserIdSet = #object(code="empty", msg="<userId> parameter cannot be empty");
+msgUserIdSet = #object(code="empty", msg="<userId> parameter cannot be empty").toString();
 
-msgPasswordSet = #object(code="empty", msg="<password> parameter cannot be empty");
+msgPasswordSet = #object(code="empty", msg="<password> parameter cannot be empty").toString();
 
-msgLevelIdSet = #object(code="empty", msg="<levelId> parameter cannot be empty");
+msgLevelIdSet = #object(code="empty", msg="<levelId> parameter cannot be empty").toString();
 
-msgLevelNameSet = #object(code="empty", msg="<levelName> parameter cannot be empty");
+msgLevelNameSet = #object(code="empty", msg="<levelName> parameter cannot be empty").toString();
 
-msgLevelRankSet = #object(code="empty", msg="<levelRank> parameter cannot be empty");
+msgLevelRankSet = #object(code="empty", msg="<levelRank> parameter cannot be empty").toString();
 
-msgLevelDescriptionSet = #object(code="empty", msg="<levelDescription> parameter cannot be empty");
+msgLevelDescriptionSet = #object(code="empty", msg="<levelDescription> parameter cannot be empty").toString();
 
-msgCompetencyIdSet = #object(code="empty", msg="<competencyId> parameter cannot be empty");
+msgCompetencyIdSet = #object(code="empty", msg="<competencyId> parameter cannot be empty").toString();
 
-msgCompetencyTitleSet = #object(code="empty", msg="<competencyTitle> parameter cannot be empty");
+msgCompetencyTitleSet = #object(code="empty", msg="<competencyTitle> parameter cannot be empty").toString();
 
-msgCompetencyLevelsSet = #object(code="empty", msg="<competencyLevels> parameter cannot be empty");
+msgCompetencyLevelsSet = #object(code="empty", msg="<competencyLevels> parameter cannot be empty").toString();
 
-msgRecordIdSet = #object(code="empty", msg="<recordId> parameter cannot be empty");
+msgRecordIdSet = #object(code="empty", msg="<recordId> parameter cannot be empty").toString();
 
-msgConfidenceSet = #object(code="empty", msg="<confidence> parameter cannot be empty");
+msgConfidenceSet = #object(code="empty", msg="<confidence> parameter cannot be empty").toString();
 
-msgEvidenceIdSet = #object(code="empty", msg="<evidenceId> parameter cannot be empty");
+msgEvidenceIdSet = #object(code="empty", msg="<evidenceId> parameter cannot be empty").toString();
 
-msgEvidenceTypeSet = #object(code="empty", msg="<evidenceType> parameter cannot be empty");
+msgEvidenceTypeSet = #object(code="empty", msg="<evidenceType> parameter cannot be empty").toString();
 
-msgEvidenceDateSet = #object(code="empty", msg="<evidenceDate> parameter cannot be empty");
+msgEvidenceDateSet = #object(code="empty", msg="<evidenceDate> parameter cannot be empty").toString();
 
-msgEvidenceResultSet = #object(code="empty", msg="<evidenceResult> parameter cannot be empty");
+msgEvidenceResultSet = #object(code="empty", msg="<evidenceResult> parameter cannot be empty").toString();
 
-msgAgentIdSet = #object(code="empty", msg="<agentId> parameter cannot be empty");
+msgAgentIdSet = #object(code="empty", msg="<agentId> parameter cannot be empty").toString();
 
-msgValidationIdSet = #object(code="empty", msg="<validationId> parameter cannot be empty");
+msgValidationIdSet = #object(code="empty", msg="<validationId> parameter cannot be empty").toString();
 
-msgAgentTypeSet = #object(code="empty", msg="<agentType> parameter cannot be empty");
+msgAgentTypeSet = #object(code="empty", msg="<agentType> parameter cannot be empty").toString();
 
-msgAgentNameSet =#object(code="empty", msg="<agentName> parameter cannot be empty");
+msgAgentNameSet =#object(code="empty", msg="<agentName> parameter cannot be empty").toString();
 
 //===================
 // Parameter Existence Messages 
 //===================
 
-msgModelExists = #object(code="exist", msg=#add(a="Model doesn't exist with the <modelId>: ", b="@modelId"));
+msgModelExists = #object(code="exist", msg=#add(a="Model doesn't exist with the <modelId>: ", b="@modelId")).toString();
 
-msgLevelExists = #object(code="exist", msg=#add(a="Level doesn't exist with the <levelId>: ", b="@levelId"));
+msgLevelExists = #object(code="exist", msg=#add(a="Level doesn't exist with the <levelId>: ", b="@levelId")).toString();
 
-msgCompetencyExists = #object(code="exist", msg=#add(a="Competency doesn't exist with the <competencyId>: ", b="@competencyId"));
+msgCompetencyExists = #object(code="exist", msg=#add(a="Competency doesn't exist with the <competencyId>: ", b="@competencyId")).toString();
 
-msgUserExists = #object(code="exist", msg=#add(a="User doesn't exist with the <userId>: ", b="@userId"));
+msgUserExists = #object(code="exist", msg=#add(a="User doesn't exist with the <userId>: ", b="@userId")).toString();
 #competencyMsgUserExists = msgUserExists;
 
-msgAgentExists = #object(code="exist", msg=#add(a="Agent doesn't exist with <agentId>: ", b="@agentId"));
+msgAgentExists = #object(code="exist", msg=#add(a="Agent doesn't exist with <agentId>: ", b="@agentId")).toString();
 
-msgAlreadyImported = #object(code="exist", msg="Already <Imported>");
+msgAlreadyImported = #object(code="exist", msg="Already <Imported>").toString();
 
-msgRecordExists = #object(code="exist", msg=#add(a="Record doesn't exist with <recordId>: ", b="@recordId"));
+msgRecordExists = #object(code="exist", msg=#add(a="Record doesn't exist with <recordId>: ", b="@recordId")).toString();
 
-msgEvidenceExists = #object(code="exist", msg=#add(a="Evidence doesn't exist with the <evidenceId>: ", b="@evidenceId"));
+msgEvidenceExists = #object(code="exist", msg=#add(a="Evidence doesn't exist with the <evidenceId>: ", b="@evidenceId")).toString();
 
-msgValidationExists = #object(code="exist", msg=#add(a="Validation doesn't exist with the <validationId>: ", b="@validationId"));
+msgValidationExists = #object(code="exist", msg=#add(a="Validation doesn't exist with the <validationId>: ", b="@validationId")).toString();
 
 //===================
 // Parameter Value Messages 
 //===================
 
-msgModelDefault = #object(code="default", msg="Cannot update <Default Model>");
+msgModelDefault = #object(code="default", msg="Cannot update <Default Model>").toString();
 
-msgModelPrivacyValue = #object(code="value", msg="Invalid value for <modelPrivacy>");
+msgModelPrivacyValue = #object(code="value", msg="Invalid value for <modelPrivacy>").toString();
 
-msgNoModelAdmin = #object(code="value", msg="Cannot Have Empty <modelAdmin> value");
+msgNoModelAdmin = #object(code="value", msg="Cannot Have Empty <modelAdmin> value").toString();
 
-msgLevelRankValue = #object(code="value", msg="<levelRank> must be a positive value");
+msgLevelRankValue = #object(code="value", msg="<levelRank> must be a positive value").toString();
 
-msgLevelNotForCompetency = #object(code="value", msg="<levelId> given is not a level of the competency given");
+msgLevelNotForCompetency = #object(code="value", msg="<levelId> given is not a level of the competency given").toString();
 
-msgCompetencyLevelsValue = #object(code="value", msg="Cannot Have Empty <competencyLevels> value");
+msgCompetencyLevelsValue = #object(code="value", msg="Cannot Have Empty <competencyLevels> value").toString();
 
-msgLevelNotDefault = #object(code="default", msg="Cannot update a <Default Level>");
+msgLevelNotDefault = #object(code="default", msg="Cannot update a <Default Level>").toString();
 
-msgConfidenceValue = #object(code="value", msg="<confidence> must be a real between 0 and 1");
+msgConfidenceValue = #object(code="value", msg="<confidence> must be a real between 0 and 1").toString();
 
-msgBackupRestoreKeyValue = #object(code="value", msg="<backupRestoreKey> not valid"); 
+msgBackupRestoreKeyValue = #object(code="value", msg="<backupRestoreKey> not valid").toString(); 
 
 //===================
 // Access Control Messages 
 //===================
 
-msgLogin = #object(code="login", msg="Cannot Perform that Action Unless Logged In");
+msgLogin = #object(code="login", msg="Cannot Perform that Action Unless Logged In").toString();
 
-msgBadPassword = #object(code="login", msg="Unable to Login: <password>");
+msgBadPassword = #object(code="login", msg="Unable to Login: <password>").toString();
 #competencyMsgBadPassword = msgBadPassword;
 
-msgBadSessionId = #object(code="login", msg="<sessionId> is not valid");
+msgBadSessionId = #object(code="login", msg="<sessionId> is not valid").toString();
 
-msgFailedLogin = #object(code="login", msg="Unable to Login: <unknown>");
+msgFailedLogin = #object(code="login", msg="Unable to Login: <unknown>").toString();
 
-msgSessionExpired = #object(code="login", msg="<sessionId> has expired");
+msgSessionExpired = #object(code="login", msg="<sessionId> has expired").toString();
 
-msgNoUserOrAgent = #object(code="login", msg="Cannot Perform That Action Unless <currentUser> or <currentAgent> are set and exist");
+msgNoUserOrAgent = #object(code="login", msg="Cannot Perform That Action Unless <currentUser> or <currentAgent> are set and exist").toString();
 
-msgUserOrAgentWriteAccess = #object(code="access", msg=#add(a="<Write> Access not granted to User or Agent with Id: ", b="@currentUser", c="@currentAgent"));
+msgUserOrAgentWriteAccess = #object(code="access", msg=#add(a="<Write> Access not granted to User or Agent with Id: ", b="@currentUser", c="@currentAgent")).toString();
 
-msgUserOrAgentReadAccess = #object(code="access", msg=#add(a="<Read> Access not granted to User or Agent with Id: ", b="@currentUser", c="@currentAgent"));
+msgUserOrAgentReadAccess = #object(code="access", msg=#add(a="<Read> Access not granted to User or Agent with Id: ", b="@currentUser", c="@currentAgent")).toString();
 #competencyMsgUserOrAgentReadAccess = msgUserOrAgentReadAccess;
 
 //---------------------------------------
