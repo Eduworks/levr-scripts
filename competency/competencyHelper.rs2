@@ -151,7 +151,7 @@ createGuestUser = #if(operator=#competencyCheckUserExists(userId=#competencyGues
 
 createGuestIfSet = #if(operator=#competencyCreateGuestUser(), operand=#true(),
 						eq=createGuestUser,
-						ne="No Guest User Created"
+						ne=#debug(obj="No Guest User Created")
 					);
 
 deleteUser = #object(
