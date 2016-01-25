@@ -8,13 +8,13 @@ cacheDb = {
 };
 
 setCache = #if(operator=#idxGet(cacheDb, key="@cacheId"), operand="",
-				eq=#object().putInObject(
-									dest="@name",
-									item="@item"
+				eq=#object().put(
+									_key="@name",
+									_value="@item"
 							),
-				ne=#idxGet(cacheDb, key="@cacheId").toObject().putInObject(
-																dest="@name",
-																item="@item"	
+				ne=#idxGet(cacheDb, key="@cacheId").toObject().put(
+																_key="@name",
+																_value="@item"	
 															)
 			).idxSet(
 				cacheDb, 

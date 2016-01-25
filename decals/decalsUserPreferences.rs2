@@ -315,21 +315,21 @@ languageVal = #if(operator="@language", operand="",
 preferencesObj = #if(operator=userPrefs, operand="",
 						eq=newPreferencesObj,
 						ne=userPrefs
-					).putInObject(
-						dest="gradeLevel",
-						item=gradeLevelVal,
-					).putInObject(
-						dest="readingLevel",
-						item=readingLevelVal,
-					).putInObject(
-						dest="resourceTypes",
-						item=resourceTypesVal
-					).putInObject(
-						dest="learningObjectives",
-						item=learningObjVal,
-					).putInObject(
-						dest="language",
-						item=languageVal,
+					).put(
+						_key="gradeLevel",
+						_value=gradeLevelVal,
+					).put(
+						_key="readingLevel",
+						_value=readingLevelVal,
+					).put(
+						_key="resourceTypes",
+						_value=resourceTypesVal
+					).put(
+						_key="learningObjectives",
+						_value=learningObjVal,
+					).put(
+						_key="language",
+						_value=languageVal,
 					);
 
 setPreferences = #object(

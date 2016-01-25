@@ -1,8 +1,8 @@
 decalsPostData=#getMultipartPostData(field="decalsData").toObject();
 
-getCompetencyDetails = #decode(obj="@recordObj").putInObject(
-													dest="competencyDetails",
-													item=#competencyRead(
+getCompetencyDetails = #decode(obj="@recordObj").put(
+													_key="competencyDetails",
+													_value=#competencyRead(
 																competencyId="@competencyId", 
 																modelId="@modelId",
 																currentUser=#competencySessionUser(sessionId=decalsPostData.cget(competencySessionId=""))
@@ -10,17 +10,17 @@ getCompetencyDetails = #decode(obj="@recordObj").putInObject(
 												).ccall(
 													competencyId=#decode(obj="@recordObj").getByParam(param=":recordCompetency").getIndex(index="0"),
 													modelId=#decode(obj="@recordObj").getByParam(param=":recordCompetencyModel").getIndex(index="0")
-												).putInObject(
-													dest="modelLevels",
-													item=#competencyReadAllLevels(
+												).put(
+													_key="modelLevels",
+													_value=#competencyReadAllLevels(
 																	modelId="@modelId", 
 																	currentUser=#competencySessionUser(sessionId=decalsPostData.cget(competencySessionId=""))
 														)
 												).ccall(
 													modelId=#decode(obj="@recordObj").getByParam(param=":recordCompetencyModel").getIndex(index="0")
-												).putInObject(
-													dest="modelDetails",
-													item=#competencyReadModel(
+												).put(
+													_key="modelDetails",
+													_value=#competencyReadModel(
 																	modelId="@modelId", 
 																	currentUser=#competencySessionUser(sessionId=decalsPostData.cget(competencySessionId=""))
 														)
@@ -54,8 +54,8 @@ findLowestLevel = #if(operator="@levelRank", operand=#getCache(name="lowestRank"
 						levelRank=#decode(obj="@levelObj").getByParam(param=":competencyLevelRank").getIndex(index="0")
 					);
 
-addDesiredCompetency = #setCache(name="desired", item=#getCache(name="desired").decode().putInObject(dest="@recordId", item=#decode(obj="@recordDeets")), accessSeconds="60");
-addHeldCompetency = #setCache(name="held", item=#getCache(name="held").decode().putInObject(dest="@recordId", item=#decode(obj="@recordDeets")), accessSeconds="60");
+addDesiredCompetency = #setCache(name="desired", item=#getCache(name="desired").decode().put(_key="@recordId", _value=#decode(obj="@recordDeets")), accessSeconds="60");
+addHeldCompetency = #setCache(name="held", item=#getCache(name="held").decode().put(_key="@recordId", _value=#decode(obj="@recordDeets")), accessSeconds="60");
 
 sortCompetencies = #object(
 						a=#object(

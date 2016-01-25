@@ -45,15 +45,15 @@ checkLevelsExist = #object(
 
 getLevelsOrDefault = #if(operator="@competencyLevels", operand="", eq=defaultLevels, ne=checkLevelsExist); 
 
-createCompetencyValues = #toObject(obj="@competencyRelationships").putInObject(
-	dest=":competencyTitle",
-	item=#competencyErrorCompetencyTitleSet(),
-).putInObject(
-	dest=":competencyDescription",
-	item=#toArray(obj="@competencyDescription"),
-).putInObject(
-	dest=":competencyLevels",
-	item=getLevelsOrDefault
+createCompetencyValues = #toObject(obj="@competencyRelationships").put(
+	_key=":competencyTitle",
+	_value=#competencyErrorCompetencyTitleSet(),
+).put(
+	_key=":competencyDescription",
+	_value=#toArray(obj="@competencyDescription"),
+).put(
+	_key=":competencyLevels",
+	_value=getLevelsOrDefault
 ).displayJson(_collapse="true");
 
 createCompParams = {
@@ -186,14 +186,14 @@ count = #competencyReadAll(modelId="@modelId").getByParam(param="@modelId").coun
   
 addTitle = #object(
 				a=#competencyErrorCompetencyTitleSet(),
-				b=#toObject(obj="@object").putInObject(dest=":competencyTitle", item=#toArray(obj="@competencyTitle"))
+				b=#toObject(obj="@object").put(_key=":competencyTitle", _value=#toArray(obj="@competencyTitle"))
 			).cget(b="");
-addDescription = #toObject(obj="@object").putInObject(dest=":competencyDescription", item=#toArray(obj="@competencyDescription"));
+addDescription = #toObject(obj="@object").put(_key=":competencyDescription", _value=#toArray(obj="@competencyDescription"));
 addLevels= #object(
 					a=#competencyErrorCompetencyLevelsSet(),
 					b=#competencyErrorCompetencyLevelsValue(),
 					c=getLevelsArray.cforEach(op=#competencyErrorLevelExists(), paramName="levelId"),
-					d=#toObject(obj="@object").putInObject(dest=":competencyLevels", item=getLevelsArray)
+					d=#toObject(obj="@object").put(_key=":competencyLevels", _value=getLevelsArray)
 				).cget(d="");
 
 addTitleIfSet = #paramExists(paramName="competencyTitle", true=addTitle, false="@object");
@@ -201,7 +201,7 @@ addDescriptionIfSet = #paramExists(paramName="competencyDescription", true=addDe
 addLevelsIfSet = #paramExists(paramName="competencyLevels", true=addLevels, false="@object");
 
 relationshipValueArray = #toArray(obj="@val");
-addRelationship = #variableSet(key="oldComp", obj=#toObject(obj=#variableGet(key="oldComp")).putInObject(dest="@rel", item=relationshipValueArray));
+addRelationship = #variableSet(key="oldComp", obj=#toObject(obj=#variableGet(key="oldComp")).put(_key="@rel", _value=relationshipValueArray));
 
 addRelationships = #toObject(obj="@competencyRelationships").cforEach(op=addRelationship, paramName="rel", valueName="val", threaded="true").string(str="true");
 
@@ -255,12 +255,12 @@ updateCompetency = #object(
 checkSourceIdEntrySet = #if(operator="@sourceIdEntry", operand="", eq=#error(msg="<sourceIdEntry> parameter must be set"), ne="@sourceIdEntry");
 checkSourceIdCatalogSet = #if(operator="@sourceIdCatalog", operand="", eq=#error(msg="<sourceIdCatalog> parameter must be set"), ne="@sourceIdCatalog");
 
-updateSourceIdVals = #object().putInObject(
-		dest=":competencySourceIdEntry", 
-		item=checkSourceIdEntrySet
-).putInObject(
-		dest=":competencySourceIdCatalog", 
-		item=checkSourceIdCatalogSet
+updateSourceIdVals = #object().put(
+		_key=":competencySourceIdEntry", 
+		_value=checkSourceIdEntrySet
+).put(
+		_key=":competencySourceIdCatalog", 
+		_value=checkSourceIdCatalogSet
 ).displayJson(_collapse="true");
 
 updateCompSourceIdParams = {

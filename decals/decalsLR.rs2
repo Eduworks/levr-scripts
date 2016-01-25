@@ -104,7 +104,7 @@ updateResourceLrInfo=#object(
 	b=updateResourceLrPublishData.ccall(fileId="@fileId"),
 	c=#solrAddDocs(
     	url=#decalsDarSolrUrl(),
-        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")
+        documents=fileMdObj.put(_key="id",_value="@fileId").putInObject(dest="fileId",_remove="true")
     ),
     d=#solrAddDocs(
     	url=#decalsRegistrySolrUrl(),

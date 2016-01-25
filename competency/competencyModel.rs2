@@ -70,15 +70,15 @@ createOntWithUUID = #if(operator="@modelId", operand="",
 
 //	3) Add Info to Model DB (key:IRI , obj: {ontologyId/filename, directory, ontologyName, ontologyDescription?, users (array, if empty/null anyone can view), admin (array, if empty anyone can edit)})
 createModelInDB = #idxSet(modelDB, key=#get(obj="@modelInfo", ontologyId=""), obj="@modelInfo");
-createAndAddToDB = createOntWithUUID.putInObject(
-	dest="name", 
-	item="@modelName"
-).putInObject(
-	dest="description", 
-	item="@modelDescription"
-).putInObject(
-	dest="accessControl",
-	item=#object(
+createAndAddToDB = createOntWithUUID.put(
+	_key="name", 
+	_value="@modelName"
+).put(
+	_key="description", 
+	_value="@modelDescription"
+).put(
+	_key="accessControl",
+	_value=#object(
 				agent=#toArray(
 							obj=#if(operator="@currentAgent", operand="", 
 										eq="[]", 
@@ -104,9 +104,9 @@ createAndAddToDB = createOntWithUUID.putInObject(
 						),
 				locked="false"
 			 ),
-).putInObject(
-	dest="creator",
-	item=#if(operator="@currentUser", operand="", 
+).put(
+	_key="creator",
+	_value=#if(operator="@currentUser", operand="", 
 					ne=#add(
 							a="user-", 
 							b="@currentUser"
@@ -116,21 +116,21 @@ createAndAddToDB = createOntWithUUID.putInObject(
 							b="@currentAgent"
 						)
 			)
-).putInObject(
-	dest="defaultLevels",
-	item=#competencyDefaultLevels()
-).putInObject(
-	dest="dateCreated",
-	item=#competencyNow()
-).putInObject(
-	dest="dateUpdated",
-	item=#competencyNow()
-).putInObject(
-	dest="imports",
-	item=#add(a="[", b="]"),
-).putInObject(
-	dest="competencyCount",
-	item=#toInteger(obj="0"),
+).put(
+	_key="defaultLevels",
+	_value=#competencyDefaultLevels()
+).put(
+	_key="dateCreated",
+	_value=#competencyNow()
+).put(
+	_key="dateUpdated",
+	_value=#competencyNow()
+).put(
+	_key="imports",
+	_value=#add(a="[", b="]"),
+).put(
+	_key="competencyCount",
+	_value=#toInteger(obj="0"),
 ).toParameter(op=createModelInDB, paramName="modelInfo");
 
 // 	4) Add Structure Import to New Ontology
@@ -161,23 +161,23 @@ deleteOld = #decode(obj="@uris").cforEach(op=checkDeleteOldDefault, paramName="u
 
 getDefault = #idxGet(modelDB, key=#competencyDefaultModel()).toObject();
 
-createDefault = #competencyDefaultModel().toParameter(op=createOntology, paramName="modelId").toObject().putInObject(
-	dest="name", 
-	item="Default Competencies"
-).putInObject(
-	dest="description", 
-	item="Default Bucket for New Competencies to be placed in"
-).putInObject(
-	dest="accessControl",
-	item=#object(
+createDefault = #competencyDefaultModel().toParameter(op=createOntology, paramName="modelId").toObject().put(
+	_key="name", 
+	_value="Default Competencies"
+).put(
+	_key="description", 
+	_value="Default Bucket for New Competencies to be placed in"
+).put(
+	_key="accessControl",
+	_value=#object(
 				type="public"
 			),
-).putInObject(
-	dest="defaultLevels",
-	item=#competencyDefaultLevels()
-).putInObject(
-	dest="imports",
-	item=#add(a="[", b="]"),  
+).put(
+	_key="defaultLevels",
+	_value=#competencyDefaultLevels()
+).put(
+	_key="imports",
+	_value=#add(a="[", b="]"),  
 ).toParameter(op=createModelInDB, paramName="modelInfo").toObject().get(ontologyId="").toParameter(op=addStructure, paramName="newOntId");
   
 checkDefault = #if(operand=#decode(obj="@uris").has(has=#add(a=#competencyDefaultURI(), b="model-default")), operator="true", 
@@ -308,9 +308,9 @@ updateModelPrivacy = #idxPut(
 													).get(
 														accessControl=""
 													).toObject(
-													).putInObject(
-														dest="type",
-														item="@modelPrivacy"
+													).put(
+														_key="type",
+														_value="@modelPrivacy"
 													)
 						);
 
@@ -322,9 +322,9 @@ updateModelAdmin = #idxPut(
 													).get(
 														accessControl=""
 													).toObject(
-													).putInObject(
-														dest="admin", 
-														item=#toArray(obj="@modelAdmin")
+													).put(
+														_key="admin", 
+														_value=#toArray(obj="@modelAdmin")
 													)
 						);
 
@@ -336,9 +336,9 @@ updateModelUser = #idxPut(
 													).get(
 														accessControl=""
 													).toObject(
-													).putInObject(
-														dest="user", 
-														item=#toArray(obj="@modelUser")
+													).put(
+														_key="user", 
+														_value=#toArray(obj="@modelUser")
 													)
 						);
 
@@ -350,9 +350,9 @@ updateModelAgent = #idxPut(
 													).get(
 														accessControl=""
 													).toObject(
-													).putInObject(
-														dest="agent", 
-														item=#toArray(obj="@modelAgent")
+													).put(
+														_key="agent", 
+														_value=#toArray(obj="@modelAgent")
 													)
 						);
 
@@ -411,12 +411,12 @@ updateAC = #competencyErrorModelIdSet().toParameter(
 
 addSourceInfoToDB = #idxPut(modelDB, key="@modelId", sourceInfo=#decode(obj="@sourceInfo"));
 
-addTitle = #toObject(obj="@object").putInObject(dest="sourceTitle", item="@sourceTitle");
-addStructure = #toObject(obj="@object").putInObject(dest="sourceStructure", item="@sourceStructure");
-addIdEntry = #toObject(obj="@object").putInObject(dest="sourceIdEntry", item="@sourceIdEntry");
-addIdCatalog = #toObject(obj="@object").putInObject(dest="sourceIdCatalog", item="@sourceIdCatalog");
+addTitle = #toObject(obj="@object").put(_key="sourceTitle", _value="@sourceTitle");
+addStructure = #toObject(obj="@object").put(_key="sourceStructure", _value="@sourceStructure");
+addIdEntry = #toObject(obj="@object").put(_key="sourceIdEntry", _value="@sourceIdEntry");
+addIdCatalog = #toObject(obj="@object").put(_key="sourceIdCatalog", _value="@sourceIdCatalog");
 
-setIdCatalog = #toObject(obj="@object").putInObject(dest="sourceIdCatalog", item="URI");
+setIdCatalog = #toObject(obj="@object").put(_key="sourceIdCatalog", _value="URI");
 
 
 addTitleIfSet = #paramExists(paramName="sourceTitle", true=addTitle, false="@object");
@@ -736,10 +736,10 @@ checkRestoredUser = #decode(obj="@modelInfo").cget(accessControl="").cget(user="
 checkRestoredAgent = #decode(obj="@modelInfo").cget(accessControl="").cget(agent="").cforEach(op=#competencyCheckAgentExists(), paramName="userId").removeFromObject(item="false").keySet();
 
 checkType = #if(operator=#decode(obj="@modelInfo").cget(accessControl="").cget(type=""), operand="public",
-					eq=#decode(obj="@ACObj").putInObject(dest="type", item="public"),
+					eq=#decode(obj="@ACObj").put(_key="type", _value="public"),
 					ne=#if(operator=#decode(obj="@modelInfo").cget(accessControl="").cget(admin="").toArray().cforEach(op=#competencyCheckUserExists(), paramName="userId").removeFromObject(item="false").count(), operand="0",
-							eq=#decode(obj="@ACObj").putInObject(dest="type", item="public"),
-							ne=#decode(obj="@ACObj").putInObject(dest="type", item="private")
+							eq=#decode(obj="@ACObj").put(_key="type", _value="public"),
+							ne=#decode(obj="@ACObj").put(_key="type", _value="private")
 						)
 				);
 

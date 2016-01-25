@@ -82,7 +82,7 @@ newUser = #object(
 	c=createUserInDB,
 	d=createAndAddUserModel.buildArguments(remove="password", remove1="currentUser", remove2="sessionId", remove3="paramObj", remove4="currentAgent", hard="true"),
 	e=addOtherFieldsToDB,
-	f=#competencyReadUser().putInObject(dest="userId", item="@userId"),
+	f=#competencyReadUser().put(_key="userId", _value="@userId"),
 ).get(f="");
 					
 #competencyCreateUser = newUser;

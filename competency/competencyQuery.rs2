@@ -163,9 +163,9 @@ readUser = #competencyReadUser(
 				op="lower"
 			).decode(
 				obj="@obj"
-			).putInObject(
-				dest="userId", 
-				item="@userId"
+			).put(
+				_key="userId", 
+				_value="@userId"
 			);
 			
 searchForUsers = #competencyGetUserIds().forEach(

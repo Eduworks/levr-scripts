@@ -298,7 +298,7 @@ paradataDocForResource=#if(
 	operator=paraTrackObj.cget(paradataDocId=""),
 	operand="",
 	eq=paradataDocForResourceRaw,
-	ne=paradataDocForResourceRaw.putInObject(dest="replaces", item=#listAdd(a=paraTrackObj.cget(paradataDocId="")))
+	ne=paradataDocForResourceRaw.put(_key="replaces", _value=#listAdd(a=paraTrackObj.cget(paradataDocId="")))
 );
 
 publishParadataToLr=#object(documents=#listAdd(item=paradataDocForResource)).httpPost(
@@ -404,9 +404,9 @@ resourceParadataObj = #object(
 //Increment paradata view count
 
 incrementViewCount = #object(
-						a=#decode(obj="@paraTrackObj").putInObject(
-														dest="viewCount",
-														item=#add(a=#decode(obj="@paraTrackObj").cget(viewCount=""), b="1")
+						a=#decode(obj="@paraTrackObj").put(
+														_key="viewCount",
+														_value=#add(a=#decode(obj="@paraTrackObj").cget(viewCount=""), b="1")
 													).idxSet(paradataDb, key="@resourceUrl")
 					).ccall(paraTrackObj=#idxGet(paradataDb, key="@resourceUrl")).cget(a="");
 				
@@ -420,9 +420,9 @@ incrementViews = incrementViewCount.ccall(resourceUrl=decalsPostData.cget(resour
 //Increment paradata collection count
 
 incrementCollectionCount = #object(
-								a=#decode(obj="@paraTrackObj").putInObject(
-																dest="collectionCount",
-																item=#add(a=#decode(obj="@paraTrackObj").cget(collectionCount=""), b="1")
+								a=#decode(obj="@paraTrackObj").put(
+																_key="collectionCount",
+																_value=#add(a=#decode(obj="@paraTrackObj").cget(collectionCount=""), b="1")
 															).idxSet(paradataDb, key="@resourceUrl")
 							).ccall(paraTrackObj=#idxGet(paradataDb, key="@resourceUrl")).cget(a="");
 				
@@ -436,9 +436,9 @@ incrementCollections = incrementCollectionCount.ccall(resourceUrl=decalsPostData
 //Decrement paradata collection count
 
 decrementCollectionCount = #object(
-								a=#decode(obj="@paraTrackObj").putInObject(
-																dest="collectionCount",
-																item=#add(a=#decode(obj="@paraTrackObj").cget(collectionCount=""), b="-1")
+								a=#decode(obj="@paraTrackObj").put(
+																_key="collectionCount",
+																_value=#add(a=#decode(obj="@paraTrackObj").cget(collectionCount=""), b="-1")
 															).idxSet(paradataDb, key="@resourceUrl")
 							).ccall(paraTrackObj=#idxGet(paradataDb, key="@resourceUrl")).cget(a="");
 				

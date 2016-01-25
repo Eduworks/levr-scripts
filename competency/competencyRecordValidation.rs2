@@ -88,21 +88,21 @@ generateAndCheckUUID = generateEvidenceId.toParameter(op=checkAndRegen, paramNam
 
 //	3) Add remaining fields to evidence object and add to Evidence DB (key:evidenceId , obj: {type, date, result, description (optional), one of: [uri, string, file] })
 createEvidenceInDB = #idxSet(evidenceDB, key=#get(obj="@evidenceInfo", evidenceId=""), obj="@evidenceInfo");
-addToDB = #decode(obj="@evidence").putInObject(
-	dest="evidenceId", 
-	item=generateAndCheckUUID
-).putInObject(
-	dest="type", 
-	item="@evidenceType"
-).putInObject(
-	dest="description", 
-	item="@evidenceDescription"
-).putInObject(
-	dest="date",
-	item=#date(input="@evidenceDate", dateFormat="yyyy-MM-dd"),
-).putInObject(
-	dest="result",
-	item="@evidenceResult",
+addToDB = #decode(obj="@evidence").put(
+	_key="evidenceId", 
+	_value=generateAndCheckUUID
+).put(
+	_key="type", 
+	_value="@evidenceType"
+).put(
+	_key="description", 
+	_value="@evidenceDescription"
+).put(
+	_key="date",
+	_value=#date(input="@evidenceDate", dateFormat="yyyy-MM-dd"),
+).put(
+	_key="result",
+	_value="@evidenceResult",
 ).toParameter(op=createEvidenceInDB, paramName="evidenceInfo");
 
 //	2) Decide Which Evidence Type this is (URI, String or File) and create evidence object to be stored in DB
@@ -169,17 +169,17 @@ validationValues = #add(
 	i="]}"
 );
 
-updateValidationDb = #object().putInObject(
-									dest="@validationId",
-									item=#decode(obj="@record").putInObject(
-												dest="validations",
-												item=#decode(obj="@record").cget(validations="").putInObject(
-																									dest="@validationId",
-																									item=validationValues.decode()
+updateValidationDb = #object().put(
+									_key="@validationId",
+									_value=#decode(obj="@record").put(
+												_key="validations",
+												_value=#decode(obj="@record").cget(validations="").put(
+																									_key="@validationId",
+																									_value=validationValues.decode()
 																								)
-											).putInObject(
-												dest=":recordValidation",
-												item=#if(operator="@recordValidationArray", operand="",
+											).put(
+												_key=":recordValidation",
+												_value=#if(operator="@recordValidationArray", operand="",
 															ne=#toArray(obj="@recordValidationArray").append(a="@validationId"),
 															eq=#toArray(obj=#add(a="[",b="]")).append(a="@validationId")
 														)
@@ -220,13 +220,13 @@ validationCountObject = findValidation.toParameter(op=createObject, paramName="r
 
 validationEvidences = #decode(obj="@validation").getByParam(param=":validationEvidence");
 
-updateDb = #decode(obj="@recordObj").putInObject(
-										dest="validations",
-										item=#decode(obj="@validations").putInObject(
-																			dest="@validationId",
-																			item=#decode(obj="@validation").putInObject(
-																												dest=":validationEvidence",
-																												item=validationEvidences.append(a="@evidenceId").removeDuplicates()
+updateDb = #decode(obj="@recordObj").put(
+										_key="validations",
+										_value=#decode(obj="@validations").put(
+																			_key="@validationId",
+																			_value=#decode(obj="@validation").put(
+																												_key=":validationEvidence",
+																												_value=validationEvidences.append(a="@evidenceId").removeDuplicates()
 																											)
 																		)
 									).idxSet(recordDB, key="@recordId");
@@ -406,9 +406,9 @@ checkGetValidation = #object(
 	b=#competencyErrorUserExists(),
 	c=#competencyErrorValidationIdSet(),
 	d=#competencyErrorValidationExists(),
-	e=#object().putInObject(
-					dest="@validationId",
-					item=getValidation
+	e=#object().put(
+					_key="@validationId",
+					_value=getValidation
 				)
 ).get(e="");
 						
@@ -445,15 +445,15 @@ determineWithNewConfidence = #competencyErrorConfidenceValue();
 
 newConfidence = #paramExists(paramName="confidence", true="@confidence", false=determineUpdatedConfidence); 
 
-updateConfidenceValues = #competencyReadRecordValidation().getByParam(param="@validationId").putInObject(dest=":validationConfidence", item=#toArray(obj=newConfidence)).displayJson(_collapse="true");
+updateConfidenceValues = #competencyReadRecordValidation().getByParam(param="@validationId").put(_key=":validationConfidence", _value=#toArray(obj=newConfidence)).displayJson(_collapse="true");
 
-updateValidationValues = #decode(obj="@recordObj").putInObject(
-														dest="validations",
-														item=#decode(obj="@validations").putInObject(
-																							dest="@validationId",
-																							item=#decode(obj="@validation").putInObject(
-																																dest=":validationConfidence",
-																																item=#toArray(obj=#add(a="[",b="]")).append(a=#toDouble(obj="@confidence"))
+updateValidationValues = #decode(obj="@recordObj").put(
+														_key="validations",
+														_value=#decode(obj="@validations").put(
+																							_key="@validationId",
+																							_value=#decode(obj="@validation").put(
+																																_key=":validationConfidence",
+																																_value=#toArray(obj=#add(a="[",b="]")).append(a=#toDouble(obj="@confidence"))
 																															)
 																						)
 													).idxSet(recordDB, key="@recordId");
@@ -510,14 +510,14 @@ deleteEvidencesIfExist = #if(
 deleteEvidences = getValidation.toParameter(op=deleteEvidencesIfExist, paramName="validation"); 
 
 
-deleteValidationFromDb = #decode(obj="@record").putInObject(
-	dest="validations",
-	item=#decode(obj="@record").cget(validations="").removeByParam(
+deleteValidationFromDb = #decode(obj="@record").put(
+	_key="validations",
+	_value=#decode(obj="@record").cget(validations="").removeByParam(
 														param="@validationId"
 													)
-).putInObject(
-	dest=":recordValidation",
-	item=#decode(obj="@record").getByParam(param=":recordValidation").toArray().removeFromArray(item="@validationId")
+).put(
+	_key=":recordValidation",
+	_value=#decode(obj="@record").getByParam(param=":recordValidation").toArray().removeFromArray(item="@validationId")
 ).idxSet(recordDB, key="@recordId");
 
 removeValidation = deleteValidationFromDb.ccall(
@@ -591,15 +591,15 @@ addAgentToDB = #object(
 	b="@id",
 ).call(id=getAgentId).get(b="");
 					
-createAgent = #object().putInObject(
-	dest="name", 
-	item="@agentName"
-).putInObject(
-	dest="description", 
-	item="@agentDescription"
-).putInObject(
-	dest="type",
-	item="@agentType",
+createAgent = #object().put(
+	_key="name", 
+	_value="@agentName"
+).put(
+	_key="description", 
+	_value="@agentDescription"
+).put(
+	_key="type",
+	_value="@agentType",
 ).toParameter(op=addAgentToDB, paramName="agentInfo");
 
 checkCreateAgent = #object(
@@ -794,12 +794,12 @@ evidenceType = #if(operator="@evidenceType", operand="", eq=#get(obj="@obj", typ
 evidenceUpdates = #idxGet(
 	evidenceDB, 
 	key="@evidenceId"
-).putInObject(
-	dest="description", 
-	item=evidenceDescription,
-).putInObject(
-	dest="type", 
-	item=evidenceType,
+).put(
+	_key="description", 
+	_value=evidenceDescription,
+).put(
+	_key="type", 
+	_value=evidenceType,
 );
 
 updateEvidence = #idxSet(evidenceDB, key="@evidenceId", obj=evidenceUpdates);

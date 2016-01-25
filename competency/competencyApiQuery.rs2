@@ -347,39 +347,39 @@ displaySPARQLAPI = API_SPARQLQueryCompetency.displayJson(_collapse="true");
 //==============
 
 
-API_Query = #object().putInObject(
-	dest="/competency/query/searchCompetencies",
-	item=API_SearchCompetency
-).putInObject(
-	dest="/competency/query/searchModels",
-	item=API_SearchCompetencyModels
-).putInObject(
-	dest="/competency/query/competencyLevels",
-	item=API_ReadCompetencyLevels
-).putInObject(
-	dest="/competency/query/recordValidations",
-	item=API_ReadRecordValidations
-).putInObject(
-	dest="/competency/query/userRecords",
-	item=API_FindUserRecordsForCompetency
-).putInObject(
-	dest="/competency/query/userCompetencies",
-	item=API_ListUserCompetencies
-).putInObject(
-	dest="/competency/query/pathFromRecord",
-	item=API_FindPathCompetency
-).putInObject(
-	dest="/competency/query/findUsers",
-	item=API_FindUsersCompetency
-).putInObject(
-	dest="/competency/query/compareToSet",
-	item=API_CompareUserCompetencySet
-).putInObject(
-	dest="/competency/query/matchSet",
-	item=API_MatchCompetencySet
-).putInObject(
-	dest="/competency/query/sparql",
-	item=API_SPARQLQueryCompetency
+API_Query = #object().put(
+	_key="/competency/query/searchCompetencies",
+	_value=API_SearchCompetency
+).put(
+	_key="/competency/query/searchModels",
+	_value=API_SearchCompetencyModels
+).put(
+	_key="/competency/query/competencyLevels",
+	_value=API_ReadCompetencyLevels
+).put(
+	_key="/competency/query/recordValidations",
+	_value=API_ReadRecordValidations
+).put(
+	_key="/competency/query/userRecords",
+	_value=API_FindUserRecordsForCompetency
+).put(
+	_key="/competency/query/userCompetencies",
+	_value=API_ListUserCompetencies
+).put(
+	_key="/competency/query/pathFromRecord",
+	_value=API_FindPathCompetency
+).put(
+	_key="/competency/query/findUsers",
+	_value=API_FindUsersCompetency
+).put(
+	_key="/competency/query/compareToSet",
+	_value=API_CompareUserCompetencySet
+).put(
+	_key="/competency/query/matchSet",
+	_value=API_MatchCompetencySet
+).put(
+	_key="/competency/query/sparql",
+	_value=API_SPARQLQueryCompetency
 );
 					
 										

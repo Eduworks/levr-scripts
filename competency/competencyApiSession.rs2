@@ -71,15 +71,15 @@ displayUserInfoAPI = API_UserInfo.displayJson(_collapse="true");
 // API for Manipulating Competency Session
 //==============
 
-API_Session = #object().putInObject(
-	dest="/competency/session/login",
-	item=API_Login
-).putInObject(
-	dest="/competency/session/validate",
-	item=API_Validate
-).putInObject(
-	dest="/competency/session/userInfo",
-	item=API_UserInfo
+API_Session = #object().put(
+	_key="/competency/session/login",
+	_value=API_Login
+).put(
+	_key="/competency/session/validate",
+	_value=API_Validate
+).put(
+	_key="/competency/session/userInfo",
+	_value=API_UserInfo
 );
 
 

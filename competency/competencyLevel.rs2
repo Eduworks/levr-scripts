@@ -23,15 +23,15 @@ simpleId = #if(operator=firstChar, operand=":", eq=removedFirst, ne="@str");
 // levelDescription:
 //==============
 
-createLevelValues = #object().putInObject(
-	dest=":competencyLevelRank",
-	item="@levelRank"
-).putInObject(
-	dest=":competencyLevelName",
-	item="@levelName"
-).putInObject(
-	dest=":competencyLevelDescription",
-	item="@levelDescription"
+createLevelValues = #object().put(
+	_key=":competencyLevelRank",
+	_value="@levelRank"
+).put(
+	_key=":competencyLevelName",
+	_value="@levelName"
+).put(
+	_key=":competencyLevelDescription",
+	_value="@levelDescription"
 ).displayJson(_collapse="true");
 
 createLevelParams = {
@@ -126,18 +126,18 @@ readAll = #object(
 
 addName = #object(
 	a=#competencyErrorLevelNameSet(),
-	b=#toObject(obj="@object").putInObject(dest=":competencyLevelName", item=#toArray(obj="@levelName"))
+	b=#toObject(obj="@object").put(_key=":competencyLevelName", _value=#toArray(obj="@levelName"))
 ).cget(b="");
 
 addRank = #object(
 	a=#competencyErrorLevelRankSet(),
 	b=#competencyErrorLevelRankValue(),
-	c=#toObject(obj="@object").putInObject(dest=":competencyLevelRank", item=#toArray(obj="@levelRank"))
+	c=#toObject(obj="@object").put(_key=":competencyLevelRank", _value=#toArray(obj="@levelRank"))
 ).cget(c="");
 
 addDescription = #object(
 	a=#competencyErrorLevelDescriptionSet(),
-	b=#toObject(obj="@object").putInObject(dest=":competencyLevelDescription", item=#toArray(obj="@levelDescription"))
+	b=#toObject(obj="@object").put(_key=":competencyLevelDescription", _value=#toArray(obj="@levelDescription"))
 ).cget(b="");
 
 addNameIfSet = #paramExists(paramName="levelName", true=addName, false="@object");

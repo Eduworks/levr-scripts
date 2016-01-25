@@ -200,21 +200,21 @@ displayDeleteCompetencyLevelAPI = API_DeleteCompetencyLevel.displayJson(_collaps
 //==============
 
 
-API_Level = #object().putInObject(
-	dest="/competency/level/create",
-	item=API_CreateCompetencyLevel
-).putInObject(
-	dest="/competency/level/read",
-	item=API_ReadCompetencyLevel
-).putInObject(
-	dest="/competency/level/all",
-	item=API_ReadAllCompetencyLevels
-).putInObject(
-	dest="/competency/level/update",
-	item=API_UpdateCompetencyLevel
-).putInObject(
-	dest="/competency/level/delete",
-	item=API_DeleteCompetencyLevel
+API_Level = #object().put(
+	_key="/competency/level/create",
+	_value=API_CreateCompetencyLevel
+).put(
+	_key="/competency/level/read",
+	_value=API_ReadCompetencyLevel
+).put(
+	_key="/competency/level/all",
+	_value=API_ReadAllCompetencyLevels
+).put(
+	_key="/competency/level/update",
+	_value=API_UpdateCompetencyLevel
+).put(
+	_key="/competency/level/delete",
+	_value=API_DeleteCompetencyLevel
 );
 					
 										

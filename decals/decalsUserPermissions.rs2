@@ -65,9 +65,9 @@ checkHasUserManagerPrivileges = #if(
 addRoleToUser=#userGet(
 	userDb,
 	userId="@userId"
-).putInObject(
-	dest="roles",
-	item=#listAdd(
+).put(
+	_key="roles",
+	_value=#listAdd(
 		a=#userGet(userDb,userId="@userId").cget(roles=""),
 		b=#toLower(obj="@roleId")
 	).removeDuplicates()
@@ -93,9 +93,9 @@ addUserRole=#object(
 removeRoleFromUser=#userGet(
 	userDb,
 	userId="@userId"
-).putInObject(
-	dest="roles",
-	item=#userGet(userDb,userId="@userId").cget(roles="").removeFromArray(item=decalsPostData.cget(roleId="").toLower())
+).put(
+	_key="roles",
+	_value=#userGet(userDb,userId="@userId").cget(roles="").removeFromArray(item=decalsPostData.cget(roleId="").toLower())
 ).idxSet(userDb,key="@userId");
 
 removeUserRole=#object(

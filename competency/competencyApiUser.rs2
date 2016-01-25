@@ -240,30 +240,30 @@ displayDeleteUserAPI = API_DeleteUser.displayJson(_collapse="true");
 //==============
 
 
-API_User = #object().putInObject(
-	dest="/competency/user/create",
-	item=API_CreateUser
-).putInObject(
-	dest="/competency/user/read",
-	item=API_ReadUser
-).putInObject(
-	dest="/competency/user/all",
-	item=API_ReadAllUsers	
-).putInObject(
-	dest="/competency/user/update",
-	item=API_UpdateUser
-).putInObject(
-	dest="/competency/user/resetPassword",
-	item=API_ResetPassword
-).putInObject(
-	dest="/competency/user/resetModel",
-	item=API_ResetModel
-).putInObject(
-	dest="/competency/user/delete",
-	item=API_DeleteUser
-).putInObject(
-	dest="/competency/user/ids",
-	item=API_GetUserIds
+API_User = #object().put(
+	_key="/competency/user/create",
+	_value=API_CreateUser
+).put(
+	_key="/competency/user/read",
+	_value=API_ReadUser
+).put(
+	_key="/competency/user/all",
+	_value=API_ReadAllUsers	
+).put(
+	_key="/competency/user/update",
+	_value=API_UpdateUser
+).put(
+	_key="/competency/user/resetPassword",
+	_value=API_ResetPassword
+).put(
+	_key="/competency/user/resetModel",
+	_value=API_ResetModel
+).put(
+	_key="/competency/user/delete",
+	_value=API_DeleteUser
+).put(
+	_key="/competency/user/ids",
+	_value=API_GetUserIds
 );
 					
 				

@@ -382,39 +382,39 @@ displayRestoreAPI = API_RestoreModel.displayJson(_collapse="true");
 //==============
 
 
-API_Model = #object().putInObject(
-	dest="/competency/model/ids",
-	item=API_ReadModelIds
-).putInObject(
-	dest="/competency/model/create", 
-	item=API_CreateModel
-).putInObject(
-	dest="/competency/model/read",
-	item=API_ReadModel
-).putInObject(
-	dest="/competency/model/update",
-	item=API_UpdateModel
-).putInObject(
-	dest="/competency/model/updateAccessControl",
-	item=API_UpdateModelAC
-).putInObject(
-	dest="/competency/model/updateSource",
-	item=API_UpdateModelSource
-).putInObject(
-	dest="/competency/model/delete",
-	item=API_DeleteModel
-).putInObject(
-	dest="/competency/model/all",
-	item=API_ReadAllModels
-).putInObject(
-	dest="/competency/model/addImport",
-	item=API_AddImport
-).putInObject(
-	dest="/competency/model/backup",
-	item=API_BackupModel
-).putInObject(
-	dest="/competency/model/restore",
-	item=API_RestoreModel
+API_Model = #object().put(
+	_key="/competency/model/ids",
+	_value=API_ReadModelIds
+).put(
+	_key="/competency/model/create", 
+	_value=API_CreateModel
+).put(
+	_key="/competency/model/read",
+	_value=API_ReadModel
+).put(
+	_key="/competency/model/update",
+	_value=API_UpdateModel
+).put(
+	_key="/competency/model/updateAccessControl",
+	_value=API_UpdateModelAC
+).put(
+	_key="/competency/model/updateSource",
+	_value=API_UpdateModelSource
+).put(
+	_key="/competency/model/delete",
+	_value=API_DeleteModel
+).put(
+	_key="/competency/model/all",
+	_value=API_ReadAllModels
+).put(
+	_key="/competency/model/addImport",
+	_value=API_AddImport
+).put(
+	_key="/competency/model/backup",
+	_value=API_BackupModel
+).put(
+	_key="/competency/model/restore",
+	_value=API_RestoreModel
 );
 #api_Model = API_Model;
 

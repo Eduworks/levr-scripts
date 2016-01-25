@@ -47,9 +47,9 @@ removeGroupFromAllCollections=allCollectionObj.cforEach(
     op=#if(
     	operator=collectionHasGroup,
 		operand="true",
-		eq=collectionObj.putInObject(
-			dest="groups",
-			item=#listAdd(
+		eq=collectionObj.put(
+			_key="groups",
+			_value=#listAdd(
 				a=groupsForCollectionMinusGroup
 			)
 		).idxSet(collectionDb,key="@collectionId")
@@ -244,15 +244,15 @@ deleteCollection=#object(
 addCollectionUser=#object(
 	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
 	b=checkHasCollectionModifyAccess.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))),
-	c=collectionObj.putInObject(
-		dest="users",
-		item=#listAdd(
+	c=collectionObj.put(
+		_key="users",
+		_value=#listAdd(
 			a=usersForCollectionMinusUser.ccall(userId=decalsPostData.cget(userId="")),
 			b=newCollectionUserObj.ccall(userId=decalsPostData.cget(userId=""),access=decalsPostData.cget(access=""))
 		)
-	).putInObject(
-		dest="updatedDate",
-		item=#date(_raw="true")
+	).put(
+		_key="updatedDate",
+		_value=#date(_raw="true")
 	).idxSet(collectionDb,key="@collectionId"),
 	d=collectionObj
 ).ccall(collectionId=decalsPostData.cget(collectionId="")).cget(d="").displayJson();
@@ -265,14 +265,14 @@ addCollectionUser=#object(
 removeCollectionUser=#object(
 	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
 	b=checkHasCollectionModifyAccess.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))),
-	c=collectionObj.putInObject(
-		dest="users",
-		item=#listAdd(
+	c=collectionObj.put(
+		_key="users",
+		_value=#listAdd(
 			a=usersForCollectionMinusUser.ccall(userId=decalsPostData.cget(userId=""))
 		)
-	).putInObject(
-		dest="updatedDate",
-		item=#date(_raw="true")
+	).put(
+		_key="updatedDate",
+		_value=#date(_raw="true")
 	).idxSet(collectionDb,key="@collectionId"),
 	d=collectionObj
 ).ccall(collectionId=decalsPostData.cget(collectionId="")).cget(d="").displayJson();
@@ -450,7 +450,7 @@ checkAddCollectionMetadata = #object(
 							 						),
 								b=#solrAddDocs(
 										url=#decalsDarSolrUrl(),
-									    documents=#decalsFileMdObj(fileId="@fileId").putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true").putInObject(dest="collectionObj", _remove="true")
+									    documents=#decalsFileMdObj(fileId="@fileId").put(_key="id",_value="@fileId").putInObject(dest="fileId",_remove="true").putInObject(dest="collectionObj", _remove="true")
 								    )
 							).ccall(
 								fileId=#if(operator=decalsPostData.cget(resourceId=""), operand="",
@@ -465,9 +465,9 @@ addCollectionItem=#object(
 	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
 	b=checkHasCollectionModifyAccess.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))),
 	c=#decalsIncrementCollectionCount(resourceUrl=decalsPostData.cget(resourceUrl="")),
-	d=collectionObj.putInObject(
-		dest="items",
-		item=#listAdd(
+	d=collectionObj.put(
+		_key="items",
+		_value=#listAdd(
 			a=itemsForCollectionMinusItem.ccall(resourceUrl=decalsPostData.cget(resourceUrl="")),
 			b=newCollectionItemObj.ccall(
 				resourceUrl=decalsPostData.cget(resourceUrl=""),
@@ -481,9 +481,9 @@ addCollectionItem=#object(
 				)
 			)
 		)
-	).putInObject(
-		dest="updatedDate",
-		item=#date(_raw="true")
+	).put(
+		_key="updatedDate",
+		_value=#date(_raw="true")
 	).idxSet(collectionDb,key="@collectionId"),
 	e=checkAddCollectionMetadata,
 	f=collectionObj,
@@ -498,14 +498,14 @@ removeCollectionItem=#object(
 	a=#decalsCheckSession(sessionId=decalsPostData.cget(sessionId="")),
 	b=checkHasCollectionModifyAccess.ccall(userId=#decalsSessionUserId(sessionId=decalsPostData.cget(sessionId=""))),
 	c=#decalsDecrementCollectionCount(resourceUrl=decalsPostData.cget(resourceUrl="")),
-	d=collectionObj.putInObject(
-		dest="items",
-		item=#listAdd(
+	d=collectionObj.put(
+		_key="items",
+		_value=#listAdd(
 			a=itemsForCollectionMinusItem.ccall(resourceUrl=decalsPostData.cget(resourceUrl=""))
 		)
-	).putInObject(
-		dest="updatedDate",
-		item=#date(_raw="true")
+	).put(
+		_key="updatedDate",
+		_value=#date(_raw="true")
 	).idxSet(collectionDb,key="@collectionId"),
 	e=collectionObj
 ).ccall(collectionId=decalsPostData.cget(collectionId="")).cget(e="").displayJson();
@@ -520,9 +520,9 @@ removeUserFromAllCollections=allCollectionObj.cforEach(
     op=#if(
     	operator=collectionHasUser,
 		operand="true",
-		eq=collectionObj.putInObject(
-			dest="users",
-			item=#listAdd(
+		eq=collectionObj.put(
+			_key="users",
+			_value=#listAdd(
 				a=usersForCollectionMinusUser
 			)
 		).idxSet(collectionDb,key="@collectionId")
@@ -538,9 +538,9 @@ removeItemFromAllCollections=allCollectionObj.cforEach(
     op=#if(
     	operator=collectionHasItem,
 		operand="true",
-		eq=collectionObj.putInObject(
-			dest="items",
-			item=#listAdd(
+		eq=collectionObj.put(
+			_key="items",
+			_value=#listAdd(
 				a=itemsForCollectionMinusItem
 			)
 		).idxSet(collectionDb,key="@collectionId")
@@ -570,32 +570,32 @@ compareResources = #object(
 						d=#variableGet(key=#add(a="@ip", b="-oldResourceUrls")).cforEach(op=checkNotInCollection, paramName="resourceUrl")
 					);
  
-updateCollectionDb=collectionObj.putInObject(
-	dest="description",
-	item=decalsPostData.cget(collectionData="").cget(description="")
-).putInObject(
-	dest="name",
-	item=decalsPostData.cget(collectionData="").cget(name="")
-).putInObject(
-	dest="groups",
-	item=decalsPostData.cget(collectionData="").cget(groups="")
-).putInObject(
-	dest="users",
-	item=decalsPostData.cget(collectionData="").cget(users="")
-).putInObject(
-	dest="items",
-	item=decalsPostData.cget(collectionData="").cget(items="")
-).putInObject(
-	dest="metadata",
-	item=#object(
+updateCollectionDb=collectionObj.put(
+	_key="description",
+	_value=decalsPostData.cget(collectionData="").cget(description="")
+).put(
+	_key="name",
+	_value=decalsPostData.cget(collectionData="").cget(name="")
+).put(
+	_key="groups",
+	_value=decalsPostData.cget(collectionData="").cget(groups="")
+).put(
+	_key="users",
+	_value=decalsPostData.cget(collectionData="").cget(users="")
+).put(
+	_key="items",
+	_value=decalsPostData.cget(collectionData="").cget(items="")
+).put(
+	_key="metadata",
+	_value=#object(
 				keywords=decalsPostData.cget(collectionData="").cget(keywords=""),
 				objectives=decalsPostData.cget(collectionData="").cget(objectives=""),
 				coverage=decalsPostData.cget(collectionData="").cget(coverage=""),
 				environment=decalsPostData.cget(collectionData="").cget(environment="")
 			)
-).putInObject(
-	dest="updatedDate",
-	item=#date(_raw="true")
+).put(
+	_key="updatedDate",
+	_value=#date(_raw="true")
 ).idxSet(collectionDb,key="@collectionId");
 
 updateCollection=#object(

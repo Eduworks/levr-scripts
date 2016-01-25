@@ -917,7 +917,7 @@ checkUserOrAgentReadAccess = #if(operator=#decode(obj="@accessControlObj").get(t
 																ne="false"
 													)		
 											)
-								).call(accessControlObj=tryGetModel.get(accessControl=""));
+								).call(accessControlObj=tryGetModel.decode().get(accessControl=""));
 #competencyCheckUserOrAgentReadAccess = checkUserOrAgentReadAccess;
 
 checkUserOrAgentWriteAccess = #if(operator="@currentUser", operand=#competencyGuestUserId(),
@@ -937,7 +937,7 @@ checkUserOrAgentWriteAccess = #if(operator="@currentUser", operand=#competencyGu
 														eq="true",
 														ne="false"
 													)
-										).call(accessControlObj=tryGetModel.get(accessControl=""))
+										).call(accessControlObj=tryGetModel.decode().get(accessControl=""))
 								);
 #competencyCheckUserOrAgentWriteAccess = checkUserOrAgentWriteAccess;
 														

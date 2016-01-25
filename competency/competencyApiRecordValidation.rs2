@@ -564,57 +564,57 @@ displayReadEvidenceFileAPI = API_ReadEvidenceFile.displayJson(_collapse="true");
 // API for Manipulating Competency Record Validations
 //==============
 
-API_Validation = #object().putInObject(
-	dest="/competency/record/validation/create",
-	item=API_CreateValidation
-).putInObject(
-	dest="/competency/record/validation/read",
-	item=API_ReadValidation
-).putInObject(
-	dest="/competency/record/validation/all",
-	item=API_ReadAllValidations
-).putInObject(
-	dest="/competency/record/validation/updateConfidence",
-	item=API_UpdateValidationConfidence,
-).putInObject(
-	dest="/competency/record/validation/forRecord",
-	item=API_ReadRecordValidations
-).putInObject(
-	dest="/competency/record/validation/delete",
-	item=API_DeleteRecordValidation
-).putInObject(
-	dest="/competency/record/validation/agent/create",
-	item=API_CreateValidationAgent
-).putInObject(
-	dest="/competency/record/validation/agent/read",
-	item=API_ReadValidationAgent
-).putInObject(
-	dest="/competency/record/validation/agent/all",
-	item=API_ReadAllAgents
-).putInObject(
-	dest="/competency/record/validation/agent/delete",
-	item=API_DeleteValidationAgent
-).putInObject(
-	dest="/competency/record/validation/evidence/read",
-	item=API_ReadEvidence
-).putInObject(
-	dest="/competency/record/validation/evidence/readFile",
-	item=API_ReadEvidenceFile
-).putInObject(
-	dest="/competency/record/validation/evidence/update",
-	item=API_UpdateEvidence
-).putInObject(
-	dest="/competency/record/validation/evidence/add",
-	item=API_AddEvidence
-).putInObject(
-	dest="/competency/record/validation/createNoEvidence",
-	item=API_CreateValidationNoEvidence
-).putInObject(
-	dest="/competency/record/validation/createWithEvidenceIds",
-	item=API_CreateValidationWithIds
-).putInObject(
-	dest="/competency/record/validation/evidence/createUnattached",
-	item=API_CreateUnattachedEvidence
+API_Validation = #object().put(
+	_key="/competency/record/validation/create",
+	_value=API_CreateValidation
+).put(
+	_key="/competency/record/validation/read",
+	_value=API_ReadValidation
+).put(
+	_key="/competency/record/validation/all",
+	_value=API_ReadAllValidations
+).put(
+	_key="/competency/record/validation/updateConfidence",
+	_value=API_UpdateValidationConfidence,
+).put(
+	_key="/competency/record/validation/forRecord",
+	_value=API_ReadRecordValidations
+).put(
+	_key="/competency/record/validation/delete",
+	_value=API_DeleteRecordValidation
+).put(
+	_key="/competency/record/validation/agent/create",
+	_value=API_CreateValidationAgent
+).put(
+	_key="/competency/record/validation/agent/read",
+	_value=API_ReadValidationAgent
+).put(
+	_key="/competency/record/validation/agent/all",
+	_value=API_ReadAllAgents
+).put(
+	_key="/competency/record/validation/agent/delete",
+	_value=API_DeleteValidationAgent
+).put(
+	_key="/competency/record/validation/evidence/read",
+	_value=API_ReadEvidence
+).put(
+	_key="/competency/record/validation/evidence/readFile",
+	_value=API_ReadEvidenceFile
+).put(
+	_key="/competency/record/validation/evidence/update",
+	_value=API_UpdateEvidence
+).put(
+	_key="/competency/record/validation/evidence/add",
+	_value=API_AddEvidence
+).put(
+	_key="/competency/record/validation/createNoEvidence",
+	_value=API_CreateValidationNoEvidence
+).put(
+	_key="/competency/record/validation/createWithEvidenceIds",
+	_value=API_CreateValidationWithIds
+).put(
+	_key="/competency/record/validation/evidence/createUnattached",
+	_value=API_CreateUnattachedEvidence
 );
 					
 #api_Validation = API_Validation;

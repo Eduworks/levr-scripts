@@ -106,7 +106,7 @@ urlUpload=#object(
     ).buildArguments(remove="sessionId", hard="true"),
     c=#solrAddDocs(
     	url=#decalsDarSolrUrl(),
-        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")
+        documents=fileMdObj.put(_key="id",_value="@fileId").putInObject(dest="fileId",_remove="true")
     ),   
 	z="@fileId"
 ).ccall(
@@ -132,7 +132,7 @@ fileUpload=#object(
     ).buildArguments(remove="sessionId", hard="true"),
     c=#solrAddDocs(
     	url=#decalsDarSolrUrl(),
-        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")
+        documents=fileMdObj.put(_key="id",_value="@fileId").putInObject(dest="fileId",_remove="true")
     ),   
 	z="@fileId"
 ).ccall(
@@ -149,7 +149,7 @@ resourceUpdateMetadata=#object(
     b=#fileUpdateMetadata(fileMetadataDb,field="fileMetadata"),
     c=#solrAddDocs(
     	url=#decalsDarSolrUrl(),
-        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")
+        documents=fileMdObj.put(_key="id",_value="@fileId").putInObject(dest="fileId",_remove="true")
     ),   
 	z=#object(msg="true")
 ).ccall(
@@ -277,7 +277,7 @@ generateResourceMetadata=#object(
 	b=updateFileMetadataFields.ccall(fileId="@fileId"),
 	c=#solrAddDocs(
     	url=#decalsDarSolrUrl(),
-        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")),
+        documents=fileMdObj.put(_key="id",_value="@fileId").putInObject(dest="fileId",_remove="true")),
 	z=#object(msg="true")
 ).ccall(
 	fileId=decalsPostData.cget(fileId="")
@@ -358,17 +358,17 @@ deleteResourceFromApp=#object(
 //Transfer resources
 
 transferResource=#object(
-	a=fileMdObj.putInObject(
-		dest="uploadedBy_t",
-		item="@toUserId"
-	).putInObject(
-		dest="transferedFrom_txt",
-		item=#listAdd(
+	a=fileMdObj.put(
+		_key="uploadedBy_t",
+		_value="@toUserId"
+	).put(
+		_key="transferedFrom_txt",
+		_value=#listAdd(
 			a=fileMdObj.cget(transferedFrom_txt=""),
 			b=#object(from="@fromUserId",on=#date(_raw="true"))
 		).removeDuplicates()
 	).idxSet(fileMetadataDb,key="@fileId"),
-	b=#solrAddDocs(url=#decalsDarSolrUrl(),documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true"))
+	b=#solrAddDocs(url=#decalsDarSolrUrl(),documents=fileMdObj.put(_key="id",_value="@fileId").putInObject(dest="fileId",_remove="true"))
 );
 
 transferAllResources=allFileMdObj.cforEach(
@@ -420,15 +420,15 @@ duplicateResource = #idxSet(
 						fileMetadataDb,
 						key="@fileId",
 						obj=#if(operator="@fileMdObj", operand="",
-									ne=#decode(obj="@fileMdObj").putInObject(
-																	dest="uploadedBy_t", 
-																	item=#decalsRetrieveSessionMetadata(sessionId=decalsPostData.cget(sessionId="")).cget(userId="")
-																).putInObject(
-																	dest="updatedDate_l",
-																	item=#date(_raw="true")
-																).putInObject(
-																	dest="published_t",
-																	item="false"
+									ne=#decode(obj="@fileMdObj").put(
+																	_key="uploadedBy_t", 
+																	_value=#decalsRetrieveSessionMetadata(sessionId=decalsPostData.cget(sessionId="")).cget(userId="")
+																).put(
+																	_key="updatedDate_l",
+																	_value=#date(_raw="true")
+																).put(
+																	_key="published_t",
+																	_value="false"
 																),
 									eq=#if(operator="@LRInfo", operand="",
 											ne=#object(
@@ -516,7 +516,7 @@ startDuplicate = #object(
 					b=duplicateResource,
 					c=#solrAddDocs(
 					    	url=#decalsDarSolrUrl(),
-					        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")
+					        documents=fileMdObj.put(_key="id",_value="@fileId").putInObject(dest="fileId",_remove="true")
 						),   
 				).ccall(
 					oldFileId=decalsPostData.cget(fileId=""),
@@ -548,7 +548,7 @@ addSimilarUrl = #object(
 					    ).buildArguments(remove="sessionId", hard="true"),
 					c=#solrAddDocs(
 					    	url=#decalsDarSolrUrl(),
-					        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true").debug()
+					        documents=fileMdObj.put(_key="id",_value="@fileId").putInObject(dest="fileId",_remove="true").debug()
 					    )
 				).ccall(
 					fileId=#generateUUID(),
@@ -578,7 +578,7 @@ addSimilarFile = #object(
 					    ).buildArguments(remove="sessionId", hard="true"),
 					c=#solrAddDocs(
 					    	url=#decalsDarSolrUrl(),
-					        documents=fileMdObj.putInObject(dest="id",item="@fileId").putInObject(dest="fileId",_remove="true")
+					        documents=fileMdObj.put(_key="id",_value="@fileId").putInObject(dest="fileId",_remove="true")
 					    )
 				).ccall(
 					fileId=#fileUpload(fileDb).ccall(fileIndex="0"),

@@ -114,15 +114,15 @@ deleteGroupFromApp=#object(
 //--------------------------
 //Add users to group
 
-addGroupUsersToDb=groupObj.putInObject(
-	dest="users",
-	item=#listAdd(
+addGroupUsersToDb=groupObj.put(
+	_key="users",
+	_value=#listAdd(
 			a=groupObj.cget(users=""),
 			b=decalsPostData.cget(users="")
 	).removeDuplicates()
-).putInObject(
-	dest="updatedDate",
-	item=#date(_raw="true")
+).put(
+	_key="updatedDate",
+	_value=#date(_raw="true")
 ).idxSet(groupDb,key="@groupId");
 
 addGroupUsers=#object(
@@ -137,12 +137,12 @@ addGroupUsers=#object(
 //--------------------------
 //Remove user from group
 
-removeGroupUserFromDb=groupObj.putInObject(
-	dest="users",
-	item=usersForGroupMinusUser
-).putInObject(
-	dest="updatedDate",
-	item=#date(_raw="true")
+removeGroupUserFromDb=groupObj.put(
+	_key="users",
+	_value=usersForGroupMinusUser
+).put(
+	_key="updatedDate",
+	_value=#date(_raw="true")
 ).idxSet(groupDb,key="@groupId");
 
 removeGroupUser=#object(
@@ -162,9 +162,9 @@ removeUserFromAllGroups=allGroupObj.cforEach(
     op=#if(
     	operator=groupHasUser,
 		operand="true",
-		eq=groupObj.putInObject(
-			dest="users",
-			item=#listAdd(
+		eq=groupObj.put(
+			_key="users",
+			_value=#listAdd(
 				a=usersForGroupMinusUser
 			)
 		).idxSet(groupDb,key="@groupId")

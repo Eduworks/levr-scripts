@@ -57,9 +57,9 @@ recordValues = #add(
 
 countExisting = #toArray(obj="@result").count();
 
-createRecord = #object().putInObject(
-							dest="@recordId",
-							item=#idxSet(recordDB, key="@recordId", obj=#toObject(obj=recordValues))
+createRecord = #object().put(
+							_key="@recordId",
+							_value=#idxSet(recordDB, key="@recordId", obj=#toObject(obj=recordValues))
 						).ccall(
 							recordId=#add(a=":", b=#generateUUID())
 						);
@@ -113,9 +113,9 @@ createRecord = #object(
 // recordId:
 //==============
 
-readRecord = #object().putInObject(
-							dest="@recordId",
-							item=#idxGet(recordDB, key="@recordId").decode()
+readRecord = #object().put(
+							_key="@recordId",
+							_value=#idxGet(recordDB, key="@recordId").decode()
 						);
 
 checkAccessRead = #object(
@@ -170,19 +170,19 @@ checkThenReadRecords = #object(
 // confidence:
 //==============
 						
-updateRecVals = #idxGet(recordDB, key="@recordId").putInObject(
-	dest=":recordConfidence", 
-	item=#toArray(obj="@confidence"),
-).putInObject(
-	dest=":recordUpdated",
-	item=#toArray(obj=#competencyNow())
+updateRecVals = #idxGet(recordDB, key="@recordId").put(
+	_key=":recordConfidence", 
+	_value=#toArray(obj="@confidence"),
+).put(
+	_key=":recordUpdated",
+	_value=#toArray(obj=#competencyNow())
 );
 
 updateRec = #idxSet(recordDB, key="@recordId", obj=updateRecVals);
 						
-updateRecord = #object().putInObject(
-							dest="@recordId",
-							item=updateRec
+updateRecord = #object().put(
+							_key="@recordId",
+							_value=updateRec
 						);
 
 checkUpdateRecord = #object(

@@ -259,24 +259,24 @@ displayReadUserCompetenciesAPI = API_ReadUserCompetencies.displayJson(_collapse=
 //==============
 
 
-API_Record = #object().putInObject(
-	dest="/competency/record/create",
-	item=API_CreateRecord
-).putInObject(
-	dest="/competency/record/read",
-	item=API_ReadRecord
-).putInObject(
-	dest="/competency/record/all",
-	item=API_ReadAllRecords
-).putInObject(
-	dest="/competency/record/delete",
-	item=API_DeleteRecord
-).putInObject(
-	dest="/competency/record/updateConfidence",
-	item=API_UpdateRecord
-).putInObject(
-	dest="/competency/record/readCompetencies",
-	item=API_ReadUserCompetencies,
+API_Record = #object().put(
+	_key="/competency/record/create",
+	_value=API_CreateRecord
+).put(
+	_key="/competency/record/read",
+	_value=API_ReadRecord
+).put(
+	_key="/competency/record/all",
+	_value=API_ReadAllRecords
+).put(
+	_key="/competency/record/delete",
+	_value=API_DeleteRecord
+).put(
+	_key="/competency/record/updateConfidence",
+	_value=API_UpdateRecord
+).put(
+	_key="/competency/record/readCompetencies",
+	_value=API_ReadUserCompetencies,
 );
 					
 #api_Record = API_Record;

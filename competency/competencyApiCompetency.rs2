@@ -224,24 +224,24 @@ displayListRelationshipsAPI = API_ListCompetencyRelationships.displayJson(_colla
 //==============
 
 
-API_Competency = #object().putInObject(
-	dest="/competency/create",
-	item=API_CreateCompetency
-).putInObject(
-	dest="/competency/read",
-	item=API_ReadCompetency
-).putInObject(
-	dest="/competency/all",
-	item=API_ReadAllCompetencys
-).putInObject(
-	dest="/competency/update",
-	item=API_UpdateCompetency
-).putInObject(
-	dest="/competency/delete",
-	item=API_DeleteCompetency
-).putInObject(
-	dest="/competency/relationships",
-	item=API_ListCompetencyRelationships
+API_Competency = #object().put(
+	_key="/competency/create",
+	_value=API_CreateCompetency
+).put(
+	_key="/competency/read",
+	_value=API_ReadCompetency
+).put(
+	_key="/competency/all",
+	_value=API_ReadAllCompetencys
+).put(
+	_key="/competency/update",
+	_value=API_UpdateCompetency
+).put(
+	_key="/competency/delete",
+	_value=API_DeleteCompetency
+).put(
+	_key="/competency/relationships",
+	_value=API_ListCompetencyRelationships
 );
 					
 					
