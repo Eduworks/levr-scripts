@@ -73,8 +73,8 @@ searchCompetency =  #ontologyQuery(searchCompParams).foreach(op=getId, paramName
 searchAllModels = #competencyGetModelIds().forEach(
 												op=#competencyCheckUserOrAgentReadAccess(), 
 												paramName="modelId"
-											).removeFromObject(
-												item="false"
+											).remove(
+												_value="false"
 											).keySet(
 											).foreach(
 												op=searchCompetency, 
@@ -97,8 +97,8 @@ searchModels = getModelsArray.forEach(
 							).forEach(
 								op=#competencyCheckUserOrAgentReadAccess(), 
 								paramName="modelId"
-							).removeFromObject(
-								item="false"
+							).remove(
+								_value="false"
 							).keySet(
 							).forEach(
 								op=searchCompetency, 
@@ -129,8 +129,8 @@ readModel = #competencyReadModel(modelId="@modelId").toParameter(op=getNameAndDe
 searchForModels = #competencyGetModelIds().forEach(
 												op=#competencyCheckUserOrAgentReadAccess(), 
 												paramName="modelId"
-											).removeFromObject(
-												item="false"
+											).remove(
+												_value="false"
 											).keySet(
 											).foreach(
 												op=readModel, 

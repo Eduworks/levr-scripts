@@ -128,7 +128,7 @@ displayReadAllAPI = API_ReadAllCompetency.displayJson(_collapse="true");
 
 update = #execute(
 			service="competencyUpdate", 
-			paramObj=#removeFromObject(obj=postedCompetencyObject, currentAgent="", currentUser="")
+			paramObj=#remove(obj=postedCompetencyObject, currentAgent="", currentUser="")
 		);
 
 checkLoginBeforeUpdate = #object(

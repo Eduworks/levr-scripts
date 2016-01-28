@@ -106,7 +106,7 @@ displayReadAllUsersAPI = API_ReadAllUsers.displayJson(_collapse="true");
 // UPDATE Competency User
 //==============
 
-update = #execute(service="competencyUpdateUser", paramObj=#removeFromObject(obj=postedCompetencyObject, password="", currentUser=""));
+update = #execute(service="competencyUpdateUser", paramObj=#remove(obj=postedCompetencyObject, password="", currentUser=""));
 
 checkLoginBeforeUpdate = #object(
 								a=#competencyErrorLogin(),

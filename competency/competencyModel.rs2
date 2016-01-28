@@ -222,7 +222,7 @@ checkModelReadable = #if(operator=#competencyCheckUserOrAgentReadAccess(), opera
 							ne="false"
 						);
 
-getAllInfo = #idxKeys(modelDB).forEach(op=checkModelReadable, paramName="modelId").removeFromObject(item="false");
+getAllInfo = #idxKeys(modelDB).forEach(op=checkModelReadable, paramName="modelId").remove(_value="false");
 #competencyReadAllModels = getAllInfo;
 
 
@@ -731,13 +731,13 @@ checkThenBackup = #object(
 // backupRestoreKey
 //==============  
 
-checkRestoredAdmin = #decode(obj="@modelInfo").cget(accessControl="").cget(admin="").cforEach(op=#competencyCheckUserExists(), paramName="userId").removeFromObject(item="false").keySet();
-checkRestoredUser = #decode(obj="@modelInfo").cget(accessControl="").cget(user="").cforEach(op=#competencyCheckUserExists(), paramName="userId").removeFromObject(item="false").keySet();
-checkRestoredAgent = #decode(obj="@modelInfo").cget(accessControl="").cget(agent="").cforEach(op=#competencyCheckAgentExists(), paramName="userId").removeFromObject(item="false").keySet();
+checkRestoredAdmin = #decode(obj="@modelInfo").cget(accessControl="").cget(admin="").cforEach(op=#competencyCheckUserExists(), paramName="userId").remove(_value="false").keySet();
+checkRestoredUser = #decode(obj="@modelInfo").cget(accessControl="").cget(user="").cforEach(op=#competencyCheckUserExists(), paramName="userId").remove(_value="false").keySet();
+checkRestoredAgent = #decode(obj="@modelInfo").cget(accessControl="").cget(agent="").cforEach(op=#competencyCheckAgentExists(), paramName="userId").remove(_value="false").keySet();
 
 checkType = #if(operator=#decode(obj="@modelInfo").cget(accessControl="").cget(type=""), operand="public",
 					eq=#decode(obj="@ACObj").put(_key="type", _value="public"),
-					ne=#if(operator=#decode(obj="@modelInfo").cget(accessControl="").cget(admin="").toArray().cforEach(op=#competencyCheckUserExists(), paramName="userId").removeFromObject(item="false").count(), operand="0",
+					ne=#if(operator=#decode(obj="@modelInfo").cget(accessControl="").cget(admin="").toArray().cforEach(op=#competencyCheckUserExists(), paramName="userId").remove(_value="false").count(), operand="0",
 							eq=#decode(obj="@ACObj").put(_key="type", _value="public"),
 							ne=#decode(obj="@ACObj").put(_key="type", _value="private")
 						)

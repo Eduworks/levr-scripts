@@ -126,7 +126,7 @@ update = #execute(
 				service="competencyUpdateLevel", 
 				modelId=postedModelId, 
 				levelId=postedLevelId, 
-				paramObj=#removeFromObject(obj=postedCompetencyObject, currentAgent="", currentUser="")
+				paramObj=#remove(obj=postedCompetencyObject, currentAgent="", currentUser="")
 			);
 
 checkLoginBeforeUpdate = #object(

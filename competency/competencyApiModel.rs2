@@ -126,7 +126,7 @@ updateCompetencyModel = #competencySessionUser(
 						).displayJson(_collapse="true");
 #comp_UpdateModel = updateCompetencyModel;
 
-updateModel = #execute(service="comp_UpdateModel", paramObj=#removeFromObject(obj=postedCompetencyObject, currentAgent=""));
+updateModel = #execute(service="comp_UpdateModel", paramObj=#remove(obj=postedCompetencyObject, currentAgent=""));
 /competency/model/update = updateModel;
 
 //-----API-------
@@ -164,7 +164,7 @@ updateCompetencyModelAC = #competencySessionUser(
 						).displayJson(_collapse="true");
 #comp_UpdateModelAC = updateCompetencyModelAC;
 
-updateModelAC = #execute(service="comp_UpdateModelAC", paramObj=#removeFromObject(obj=postedCompetencyObject, currentAgent=""));
+updateModelAC = #execute(service="comp_UpdateModelAC", paramObj=#remove(obj=postedCompetencyObject, currentAgent=""));
 /competency/model/updateAccessControl = updateModelAC;
 
 //-----API-------
@@ -203,7 +203,7 @@ updateModelSource = #competencySessionUser(
 						).displayJson(_collapse="true");
 #comp_UpdateModelSource = updateModelSource;
 
-updateModelSource = #execute(service="comp_UpdateModelSource", paramObj=#removeFromObject(obj=postedCompetencyObject, currentAgent=""));
+updateModelSource = #execute(service="comp_UpdateModelSource", paramObj=#remove(obj=postedCompetencyObject, currentAgent=""));
 /competency/model/updateSource = updateModelSource;
 
 //-----API-------

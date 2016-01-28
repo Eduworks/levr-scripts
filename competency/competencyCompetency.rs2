@@ -145,8 +145,8 @@ readAllCompetencies = getModelsArray.cforEach(
 							).cforEach(
 								op=#competencyCheckUserOrAgentReadAccess(), 
 								paramName="modelId"
-							).removeFromObject(
-								item="false"
+							).remove(
+								_value="false"
 							).keySet(
 							).cforEach(
 								op=readAllCompetency, 
