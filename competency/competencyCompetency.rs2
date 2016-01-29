@@ -203,7 +203,7 @@ addLevelsIfSet = #paramExists(paramName="competencyLevels", true=addLevels, fals
 relationshipValueArray = #toArray(obj="@val");
 addRelationship = #variableSet(key="oldComp", obj=#toObject(obj=#variableGet(key="oldComp")).put(_key="@rel", _value=relationshipValueArray));
 
-addRelationships = #toObject(obj="@competencyRelationships").cforEach(op=addRelationship, paramName="rel", valueName="val", threaded="true").string(str="true");
+addRelationships = #toObject(obj="@competencyRelationships").cforEach(op=addRelationship, paramName="rel", valueName="val", threaded="true");
 
 createUpdatedValues = addRelationships.toParameter(op=#variableGet(key="oldComp")).toParameter(
 	op=addTitleIfSet, 
@@ -294,7 +294,10 @@ deleteCompParams = {
 	instanceId = "@competencyId",
 };
 
-delete = #ontologyDeleteInstance(deleteCompParams).string(str="true");
+delete = #object(
+	a=#ontologyDeleteInstance(deleteCompParams),
+	b=#string(str="true")
+).cget(b="");
 
 deleteCompetency = #object(
 						a=#competencyErrorModelIdSet(),
