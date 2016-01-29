@@ -247,10 +247,13 @@ updateModelName = #idxPut(modelDB, key="@modelId", name="@modelName");
 updateModelDescription = #idxPut(modelDB, key="@modelId", description="@modelDescription");
 updateLevels = #idxPut(modelDB, key="@modelId", defaultLevels=getDefaultLevelsArray);
 
-checkDefaultLevels = getDefaultLevelsArray.forEach(
-												op=#competencyErrorLevelExists(), 
-												paramName="levelId"
-											).string(str="true");
+checkDefaultLevels = #object(
+	a=getDefaultLevelsArray.forEach(
+			op=#competencyErrorLevelExists(), 
+			paramName="levelId"
+		),
+	b=#string(str="true")
+).cget(b="");
 
 updateDefaultLevels = #if(operator=checkDefaultLevels, operand="true", eq=updateLevels);
 
@@ -716,7 +719,8 @@ checkThenBackup = #object(
 			).ccall(directoryPath=#add(a=#competencyBackupDirectory(), b="@modelId")),
 	d=backupTDB,
 	e=backupModelInfo,
-).string(str="true");
+	f=#string(str="true")
+).cget(f="");
 
 #competencyExportModelBackup = checkThenBackup;
 
@@ -816,7 +820,8 @@ restoreBackup = #object(
 						),
 					c=addToTDB,
 					d=addToDB,
-				).string(str="true");
+					e=#string(str="true")
+				).cget(e="")
 
 #competencyRestoreModelBackup = restoreBackup;
 

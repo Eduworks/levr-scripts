@@ -74,16 +74,19 @@ sessionDB = {
 	index = "@sessionDbIndex"
 };
 
-incrementSessionLength = #sessionUpdate(
-	sessionDB, 
-	sessionId="@sessionId", 
-	expires=#date(
-			addMinutes=#if(operator="@mins", operand="", eq=increment_mins, ne="@mins"),
-			addHours=#if(operator="@hours", operand="", eq=increment_hours, ne="@hours"), 
-			addDays=#if(operator="@days", operand="", eq=increment_days, ne="@days"),
-			_raw="true"
-		)
-).string(str="true");
+incrementSessionLength = #object(
+	a=#sessionUpdate(
+		sessionDB, 
+		sessionId="@sessionId", 
+		expires=#date(
+				addMinutes=#if(operator="@mins", operand="", eq=increment_mins, ne="@mins"),
+				addHours=#if(operator="@hours", operand="", eq=increment_hours, ne="@hours"), 
+				addDays=#if(operator="@days", operand="", eq=increment_days, ne="@days"),
+				_raw="true"
+			)
+		),
+	b=#string(str="true")
+).cget(b="");
 
 #authIncrementSessionLength = incrementSessionLength;
 
@@ -109,13 +112,16 @@ validateSession = #if(operator="@sessionId", operand="",
 	ne=#if(operator=#sessionRead(sessionDB, sessionId="@sessionId").displayJson(_collapse="true"), operand=#add(a="{", b="}"), 
 			eq=#string(str="false"),
 			ne= #if(operator=#sessionRead(sessionDB, sessionId="@sessionId").get(expires=""), operand=#date(_raw="true"),
-					lt= #object(
+					lt=#object(
 							a=#sessionDelete(sessionDB, sessionId="@sessionId"),
 							b=throwSessionExpiredError
 						),
-					ge= #if(operator="@noIncrement", operand=#true(),
-							ne=incrementSessionLength
-						).string(str="true")
+					ge=#object(
+							a=#if(operator="@noIncrement", operand=#true(),
+									ne=incrementSessionLength
+								),
+							b=#string(str="true")
+						).cget(b="")
 				)
 		)
 );

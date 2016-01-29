@@ -237,7 +237,10 @@ deleteOnt = #ontologyDelete(userDeleteParams);
 deleteUser = #if(
 	operator=deleteUserFromDB, 
 	operand="true",
-	eq=deleteOnt.string(str="true"),
+	eq=#object(
+			a=deleteOnt,
+			b=#string(str="true"),
+		).cget(b=""),
 	ne="false"
 );
 

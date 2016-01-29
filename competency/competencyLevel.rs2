@@ -197,7 +197,10 @@ deleteLevelParams = {
 	instanceId="@levelId"
 };
 
-deleteLevel = #ontologyDeleteInstance(deleteLevelParams).string(str="true");
+deleteLevel = #object(
+	a=#ontologyDeleteInstance(deleteLevelParams)
+	b=#string(str="true")
+).cget(b="");
 
 checkDeleteLevel = #object(
 	a=#competencyErrorModelIdSet(),

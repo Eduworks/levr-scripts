@@ -559,11 +559,14 @@ checkModelExists = #if(operator=tryGetModel, operand=#add(a="{", b="}"),
 //------------
 
 checkLevelExists = #catch(
-						try=#ontologyReadInstance(
-								directory=#competencyDirectory(), 
-								ontologyId= #competencyGetModelUri(),
-								instanceId="@levelId"
-							).string(str="true"),
+						try=#object(
+								a=#ontologyReadInstance(
+										directory=#competencyDirectory(), 
+										ontologyId= #competencyGetModelUri(),
+										instanceId="@levelId"
+									),
+								b=#string(str="true")
+							).cget(b=""),
 						runtime="false"
 					);
 
@@ -571,11 +574,14 @@ checkLevelExists = #catch(
 //------------
 
 checkCompetencyExists = #catch(
-							try=#ontologyReadInstance(
-									directory=#competencyDirectory(), 
-									ontologyId= #competencyGetModelUri(),
-									instanceId="@competencyId"
-								).string(str="true"),
+							try=#object(
+									a=#ontologyReadInstance(
+											directory=#competencyDirectory(), 
+											ontologyId= #competencyGetModelUri(),
+											instanceId="@competencyId"
+										),
+									b=#string(str="true")
+								).cget(b=""),
 							runtime="false"
 						);
 

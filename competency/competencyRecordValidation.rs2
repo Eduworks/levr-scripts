@@ -843,7 +843,8 @@ delete = #object(
 	a=#competencyErrorEvidenceIdSet(),
 	b=#competencyErrorEvidenceExists(),
 	c=checkForFile,
-	d=ifNotSetRemoveReferences
-).string(str="true");
+	d=ifNotSetRemoveReferences,
+	e=#string(str="true")
+).cget(e="");
 
 #competencyDeleteEvidence = delete;

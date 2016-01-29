@@ -38,9 +38,10 @@ checkSession = #if(
 		    b=sessionExpiredError
 		),
 	    ge=#object(
-	    		a=#sessionUpdate(sessionDb, sessionId="@sessionId", expires=#date(addHours="1", _raw="true")).string(str="true"),
+	    		a=#sessionUpdate(sessionDb, sessionId="@sessionId", expires=#date(addHours="1", _raw="true")),
 	    		b=#competencyIncrementSessionLength(),
-	    ).cget(a="")
+	    		c=#string(str="true"),
+	    ).cget(c="")
 	)
 );
 

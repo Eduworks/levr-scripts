@@ -552,12 +552,18 @@ removeItemFromAllCollections=allCollectionObj.cforEach(
 //Update collection
 
 checkNotInCollection = #if(operator=#cacheGet(obj="newResourceUrls").toArray().has(has="@resourceUrl"), operand="true",
-							ne=#decalsDecrementCollectionCount().string(str="dec"),
+							ne=#object(
+									a=#decalsDecrementCollectionCount(),
+									b=#string(str="dec"),
+								).cget(b=""),
 							eq="nothing"
 						);
 
 checkInCollection = #if(operator=#cacheGet(obj="oldResourceUrls").toArray().has(has="@resourceUrl"), operand="true",
-						ne=#decalsIncrementCollectionCount().string(str="inc"),
+						ne=#object(
+								a=#decalsIncrementCollectionCount(),
+								b=#string(str="inc"),
+							).cget(b=""),
 						eq="nothing"
 					);
 

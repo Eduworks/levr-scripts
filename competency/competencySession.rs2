@@ -13,7 +13,10 @@ userDB = {
 	index = "0"
 };
 
-incrementCompetencySessionLength = #sessionUpdate(sessionDB, sessionId="@sessionId", expires=#date(addHours="1", _raw="true")).string(str="true");
+incrementCompetencySessionLength = #object(
+	a=#sessionUpdate(sessionDB, sessionId="@sessionId", expires=#date(addHours="1", _raw="true")),
+	b=#string(str="true")
+).cget(b="");
 
 #competencyIncrementSessionLength = incrementCompetencySessionLength;
 
