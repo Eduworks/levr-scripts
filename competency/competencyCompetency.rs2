@@ -203,7 +203,7 @@ addLevelsIfSet = #paramExists(paramName="competencyLevels", true=addLevels, fals
 relationshipValueArray = #toArray(obj="@val");
 addRelationship = #variableSet(key="oldComp", obj=#toObject(obj=#variableGet(key="oldComp")).put(_key="@rel", _value=relationshipValueArray));
 
-addRelationships = #toObject(obj="@competencyRelationships").cforEach(op=addRelationship, paramName="rel", valueName="val", threaded="true");
+addRelationships = #toObject(obj="@competencyRelationships").cforEach(op=addRelationship, paramName="rel", valueName="val", threaded="false");
 
 createUpdatedValues = addRelationships.toParameter(op=#variableGet(key="oldComp")).toParameter(
 	op=addTitleIfSet, 
