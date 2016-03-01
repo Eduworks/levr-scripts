@@ -198,7 +198,7 @@ deleteLevelParams = {
 };
 
 deleteLevel = #object(
-	a=#ontologyDeleteInstance(deleteLevelParams)
+	a=#ontologyDeleteInstance(deleteLevelParams),
 	b=#string(str="true")
 ).cget(b="");
 

@@ -821,7 +821,7 @@ restoreBackup = #object(
 					c=addToTDB,
 					d=addToDB,
 					e=#string(str="true")
-				).cget(e="")
+				).cget(e="");
 
 #competencyRestoreModelBackup = restoreBackup;
 
